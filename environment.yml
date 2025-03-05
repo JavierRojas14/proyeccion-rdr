@@ -16,8 +16,9 @@ dependencies:
   - notebook
   - numpy
   - pandas
+  - polars
   - scikit-learn
   - pip:
-    - python-dotenv
-    - mkdocs
-    - -e .
+      - python-dotenv
+      - mkdocs
+      - -e .
