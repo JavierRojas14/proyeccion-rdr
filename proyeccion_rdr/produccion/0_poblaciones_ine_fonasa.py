@@ -394,7 +394,12 @@ def procesar_poblaciones(
         )
     )
 
-    return poblaciones_ine, poblaciones_fonasa, poblaciones_fonasa_extrapoladas, porcentajes_fonasa
+    return (
+        poblaciones_ine,
+        poblaciones_fonasa,
+        porcentajes_fonasa,
+        poblaciones_fonasa_extrapoladas,
+    )
 
 
 if __name__ == "__main__":
@@ -433,7 +438,7 @@ if __name__ == "__main__":
     }
 
     # Procesar datos
-    poblacion_ine, poblacion_fonasa, poblaciones_fonasa_extrapoladas, porcentaje_fonasa = (
+    poblacion_ine, poblacion_fonasa, porcentaje_fonasa, poblaciones_fonasa_extrapoladas = (
         procesar_poblaciones(
             RUTA_INE,
             RUTA_FONASA,
