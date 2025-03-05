@@ -15,6 +15,7 @@ dependencies:
   - matplotlib
   - notebook
   - numpy
+  - openpyxl
   - pandas
   - polars
   - pyarrow
