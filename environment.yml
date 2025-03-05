@@ -17,6 +17,7 @@ dependencies:
   - numpy
   - pandas
   - polars
+  - pyarrow
   - scikit-learn
   - pip:
       - python-dotenv
