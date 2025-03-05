@@ -318,6 +318,7 @@ def extrapolar_poblacion_fonasa(poblaciones_ine, porcentaje_fonasa, columna_porc
     Returns:
         pd.DataFrame: DataFrame de poblaciones extrapoladas.
     """
+    print(f"> Extrapolando poblaciones FONASA con {columna_porcentaje}")
     return poblaciones_ine.mul(porcentaje_fonasa[columna_porcentaje], axis=0)
 
 
@@ -446,3 +447,12 @@ if __name__ == "__main__":
     # Guardar o analizar resultados
     # print(poblaciones_fonasa_extrapoladas.head())
     # print(porcentaje_fonasa.head())
+    with pd.ExcelWriter("data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx") as file:
+        poblacion_ine.to_excel(file, sheet_name="poblacion_INE", index=False)
+        poblacion_fonasa.to_excel(file, sheet_name="poblacion_FONASA", index=False)
+        porcentaje_fonasa.reset_index().to_excel(
+            file, sheet_name="porcentaje_FONASA_por_estrato", index=False
+        )
+        poblaciones_fonasa_extrapoladas.to_excel(
+            file, sheet_name="poblaciones_fonasa_extrapoladas", index=False
+        )
