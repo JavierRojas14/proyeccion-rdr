@@ -169,7 +169,7 @@ def unir_con_incidencias(incidencias, dataframe, indice):
 
 
 # Implementación modular
-def procesar_datos_areas_influencia(
+def acotar_casos_de_problemas_de_salud_a_areas_de_influencias_hospital(
     casos_fonasa_ine, incidencias, columnas_poblacion, columna_areas, columna_estrato, columna_casos
 ):
     """
@@ -376,6 +376,21 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Obtiene los casos para cada problema de salud INE y FONASA
     casos_INE, poblacion_area_de_estudio, casos_FONASA = calcular_casos_incidencia(
         incidencias, poblaciones_ine, poblaciones_fonasa_extrapoladas
+    )
+
+    # Acota los casos calculados solamente a los casos que requiere el hospital
+    (
+        casos_FONASA_por_region,
+        casos_a_hacerse_cargo_por_region,
+        casos_FONASA_consolidados,
+        casos_a_hacerse_cargo_consolidados,
+    ) = acotar_casos_de_problemas_de_salud_a_areas_de_influencias_hospital(
+        casos_FONASA,
+        incidencias,
+        COLUMNAS_POBLACION_INE,
+        "Área de Influencia Propuesta",
+        "Estrato",
+        "Casos a hacerse cargo del Área de Influencia Propuesta",
     )
 
 
