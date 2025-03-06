@@ -31,13 +31,6 @@ def leer_planilla_poblaciones(ruta_planilla):
     return dfs.values()
 
 
-def leer_planilla_incidencias(ruta_planilla, columnas_a_utilizar):
-    """
-    Lee la planilla de incidencias y devuelve un DataFrame filtrado por las columnas especificadas.
-    """
-    return pd.read_excel(ruta_planilla, usecols=columnas_a_utilizar)
-
-
 def filtrar_diagnosticos_limitados_por_oferta(df_incidencias):
     """
     Filtra los diagnósticos limitados por oferta de un DataFrame de incidencias.
@@ -78,11 +71,11 @@ def corregir_prevalencias(df_incidencias):
     return df_incidencias
 
 
-def procesar_incidencias(ruta_planilla, columnas_a_utilizar):
+def leer_planilla_incidencias(ruta_planilla, columnas_a_utilizar):
     """
     Procesa las incidencias desde la lectura hasta la corrección de prevalencias.
     """
-    incidencias = leer_planilla_incidencias(ruta_planilla, columnas_a_utilizar)
+    incidencias = pd.read_excel(ruta_planilla, usecols=columnas_a_utilizar)
     incidencias, limitados_por_oferta = filtrar_diagnosticos_limitados_por_oferta(incidencias)
     incidencias = convertir_incidencia_a_numeros(incidencias)
     incidencias = calcular_rate_incidencia(incidencias)
@@ -366,7 +359,6 @@ def calcular_casos_incidencia(incidencias, poblaciones_ine, poblaciones_fonasa_e
         df_casos_fonasa["rate_incidencia"], axis=0
     )
 
-    df_casos_ine.to_excel("prueba.xlsx")
     return df_casos_ine, df_poblacion_area_de_estudio, df_casos_fonasa
 
 
@@ -377,7 +369,9 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     )
 
     # Lee la planilla de trazadoras del hospital
-    incidencias, limitados_por_oferta = procesar_incidencias(ruta_incidencias, COLUMNAS_INCIDENCIA)
+    incidencias, limitados_por_oferta = leer_planilla_incidencias(
+        ruta_incidencias, COLUMNAS_INCIDENCIA
+    )
 
     # Obtiene los casos para cada problema de salud INE y FONASA
     casos_INE, poblacion_area_de_estudio, casos_FONASA = calcular_casos_incidencia(
