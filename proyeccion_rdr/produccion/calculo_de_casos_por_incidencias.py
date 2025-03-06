@@ -354,13 +354,19 @@ def calcular_casos_incidencia(incidencias, poblaciones_ine, poblaciones_fonasa_e
     # Une las incidencias con las poblaciones INE y calcula los casos
     df_casos_ine = incidencias.merge(poblaciones_ine, how="left", on="Edad Incidencia")
     df_poblacion_area_de_estudio = df_casos_ine.query("Estrato == 'Pais'")
-    df_casos_ine[COLUMNAS_POBLACION_INE] *= df_casos_ine["rate_incidencia"]
+    df_casos_ine[COLUMNAS_POBLACION_INE] = df_casos_ine[COLUMNAS_POBLACION_INE].mul(
+        df_casos_ine["rate_incidencia"], axis=0
+    )
 
     # Une las incidencias con las poblaciones FONASA extrapoladas y calcula los casos
     df_casos_fonasa = incidencias.merge(
         poblaciones_fonasa_extrapoladas, how="left", on="Edad Incidencia"
     )
-    df_casos_fonasa[COLUMNAS_POBLACION_INE] *= df_casos_fonasa["rate_incidencia"]
+    df_casos_fonasa[COLUMNAS_POBLACION_INE] = df_casos_fonasa[COLUMNAS_POBLACION_INE].mul(
+        df_casos_fonasa["rate_incidencia"], axis=0
+    )
+
+    df_casos_ine.to_excel("prueba.xlsx")
     return df_casos_ine, df_poblacion_area_de_estudio, df_casos_fonasa
 
 
@@ -373,15 +379,10 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Lee la planilla de trazadoras del hospital
     incidencias, limitados_por_oferta = procesar_incidencias(ruta_incidencias, COLUMNAS_INCIDENCIA)
 
-    print(type(poblaciones_ine))
-
     # Obtiene los casos para cada problema de salud INE y FONASA
     casos_INE, poblacion_area_de_estudio, casos_FONASA = calcular_casos_incidencia(
         incidencias, poblaciones_ine, poblaciones_fonasa_extrapoladas
     )
-
-    print(casos_INE)
-    print(casos_FONASA)
 
 
 RUTA_PLANILLA_POBLACIONES = "data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
