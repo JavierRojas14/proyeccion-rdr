@@ -393,48 +393,46 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         "Casos a hacerse cargo del Área de Influencia Propuesta",
     )
 
+    # Obtiene los casos de los diags acotado por oferta
+    area_de_infl_INT_acotados_por_oferta = limitados_por_oferta.copy()
+    for anio_ine in COLUMNAS_POBLACION_INE:
+        area_de_infl_INT_acotados_por_oferta[anio_ine] = area_de_infl_INT_acotados_por_oferta[
+            "Casos (Cada 100.000)"
+        ]
+
+    # Indica el Estrato de los acotados por oferta
+    area_de_infl_INT_acotados_por_oferta["Estrato"] = "Acotado por oferta"
+
+    # Une los casos acotados por oferta a los casos desglosados por region
+    casos_a_hacerse_cargo_por_region = pd.concat(
+        [casos_a_hacerse_cargo_por_region, area_de_infl_INT_acotados_por_oferta]
+    )
+
+    # Une los casos acotados por oferta a los casos por incidencia y prevalencia
+    casos_a_hacerse_cargo_consolidados = pd.concat(
+        [casos_a_hacerse_cargo_consolidados, area_de_infl_INT_acotados_por_oferta]
+    )
+
+    return (
+        casos_FONASA_por_region,
+        casos_a_hacerse_cargo_por_region,
+        casos_FONASA_consolidados,
+        casos_a_hacerse_cargo_consolidados,
+    )
+
 
 RUTA_PLANILLA_POBLACIONES = "data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
 RUTA_PLANILLA_INCIDENCIAS = (
     "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
 )
-calcular_casos_de_trazadoras(RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS)
+a, b, c, d = calcular_casos_de_trazadoras(RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS)
 
+with pd.ExcelWriter("prueba.xlsx") as file:
+    a.to_excel(file, sheet_name="a")
+    b.to_excel(file, sheet_name="b")
+    c.to_excel(file, sheet_name="c")
+    d.to_excel(file, sheet_name="d")
 
-# # Uso del flujo modularizado
-# (
-#     casos_FONASA_por_region,
-#     casos_a_hacerse_cargo_por_region,
-#     casos_FONASA_consolidados,
-#     casos_a_hacerse_cargo_consolidados,
-# ) = procesar_datos_areas_influencia(
-#     casos_FONASA,
-#     incidencias,
-#     COLUMNAS_POBLACION_INE,
-#     "Área de Influencia Propuesta",
-#     "Estrato",
-#     "Casos a hacerse cargo del Área de Influencia Propuesta",
-# )
-
-# # Obtiene los casos de los diags acotado por oferta
-# area_de_infl_INT_acotados_por_oferta = limitados_por_oferta.copy()
-# for anio_ine in COLUMNAS_POBLACION_INE:
-#     area_de_infl_INT_acotados_por_oferta[anio_ine] = area_de_infl_INT_acotados_por_oferta[
-#         "Casos (Cada 100.000)"
-#     ]
-
-# # Indica el Estrato de los acotados por oferta
-# area_de_infl_INT_acotados_por_oferta["Estrato"] = "Acotado por oferta"
-
-# # Une los casos acotados por oferta a los casos desglosados por region
-# casos_a_hacerse_cargo_por_region = pd.concat(
-#     [casos_a_hacerse_cargo_por_region, area_de_infl_INT_acotados_por_oferta]
-# )
-
-# # Une los casos acotados por oferta a los casos por incidencia y prevalencia
-# casos_a_hacerse_cargo_consolidados = pd.concat(
-#     [casos_a_hacerse_cargo_consolidados, area_de_infl_INT_acotados_por_oferta]
-# )
 
 # # Obtiene los casos hospitalizados por region y consolidados
 # casos_hosp_por_region, casos_hosp_consolidados = calcular_casos_macroproceso(
