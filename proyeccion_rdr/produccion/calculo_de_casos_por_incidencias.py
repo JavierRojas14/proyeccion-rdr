@@ -362,6 +362,39 @@ def calcular_casos_incidencia(incidencias, poblaciones_ine, poblaciones_fonasa_e
     return df_casos_ine, df_poblacion_area_de_estudio, df_casos_fonasa
 
 
+def ajustar_casos_por_limite_oferta(casos_df, columnas_poblacion):
+    """
+    Ajusta el número de casos basado en limitaciones de oferta.
+
+    Parámetros:
+    casos_df (pd.DataFrame): DataFrame con datos de casos.
+    columnas_poblacion (list): Lista de columnas de población a actualizar.
+
+    Retorna:
+    pd.DataFrame: DataFrame ajustado con casos limitados por oferta.
+    """
+    casos_ajustados = casos_df.copy()
+    for anio in columnas_poblacion:
+        casos_ajustados[anio] = casos_ajustados["Casos (Cada 100.000)"]
+
+    casos_ajustados["Estrato"] = "Acotado por oferta"
+    return casos_ajustados
+
+
+def unir_casos(df_original, df_nuevos_casos):
+    """
+    Une nuevos casos en un DataFrame existente.
+
+    Parámetros:
+    df_original (pd.DataFrame): DataFrame existente.
+    df_nuevos_casos (pd.DataFrame): Nuevos casos a agregar.
+
+    Retorna:
+    pd.DataFrame: DataFrame combinado.
+    """
+    return pd.concat([df_original, df_nuevos_casos])
+
+
 def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Lee la planilla de poblaciones INE y FONASA, junto a las poblaciones atingentes
     poblaciones_ine, poblacion_fonasa, porcentaje_fonasa, poblaciones_fonasa_extrapoladas = (
@@ -393,24 +426,17 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         "Casos a hacerse cargo del Área de Influencia Propuesta",
     )
 
-    # Obtiene los casos de los diags acotado por oferta
-    area_de_infl_INT_acotados_por_oferta = limitados_por_oferta.copy()
-    for anio_ine in COLUMNAS_POBLACION_INE:
-        area_de_infl_INT_acotados_por_oferta[anio_ine] = area_de_infl_INT_acotados_por_oferta[
-            "Casos (Cada 100.000)"
-        ]
-
-    # Indica el Estrato de los acotados por oferta
-    area_de_infl_INT_acotados_por_oferta["Estrato"] = "Acotado por oferta"
-
-    # Une los casos acotados por oferta a los casos desglosados por region
-    casos_a_hacerse_cargo_por_region = pd.concat(
-        [casos_a_hacerse_cargo_por_region, area_de_infl_INT_acotados_por_oferta]
+    # Procesar casos limitados por oferta
+    casos_por_limite_oferta = ajustar_casos_por_limite_oferta(
+        limitados_por_oferta, COLUMNAS_POBLACION_INE
     )
 
-    # Une los casos acotados por oferta a los casos por incidencia y prevalencia
-    casos_a_hacerse_cargo_consolidados = pd.concat(
-        [casos_a_hacerse_cargo_consolidados, area_de_infl_INT_acotados_por_oferta]
+    # Unir con casos por región y casos consolidados
+    casos_a_hacerse_cargo_por_region = unir_casos(
+        casos_a_hacerse_cargo_por_region, casos_por_limite_oferta
+    )
+    casos_a_hacerse_cargo_consolidados = unir_casos(
+        casos_a_hacerse_cargo_consolidados, casos_por_limite_oferta
     )
 
     return (
