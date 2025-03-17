@@ -1,8 +1,11 @@
 import pandas as pd
 
+RUTA_PLANILLA_POBLACIONES = "data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
 RUTA_PLANILLA_INCIDENCIAS = (
-    "../data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
+    "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
 )
+RUTA_PLANILLA_OUTPUT = "data/interim/0.1_casos_teoricos_diagnosticos.xlsx"
+
 COLUMNAS_INCIDENCIA = [
     "Diagnostico",
     "Diagnosticos Contenidos",
@@ -559,15 +562,25 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         columnas_indice,
     )
 
-    return (casos_macroprocesos_por_region, casos_macroprocesos_consolidados)
+    return {
+        "casos_teoricos_INE": casos_INE,
+        "casos_teoricos_FONASA": casos_FONASA.reset_index(),
+        "casos_macroproceso_por_region": casos_macroprocesos_por_region.reset_index(),
+        "casos_macroproceso_consolidado": casos_macroprocesos_consolidados.reset_index(),
+        "casos_a_hacerse_cargo_INT": casos_a_hacerse_cargo_consolidados,
+    }
 
 
-RUTA_PLANILLA_POBLACIONES = "data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
-RUTA_PLANILLA_INCIDENCIAS = (
-    "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
-)
-a, b = calcular_casos_de_trazadoras(RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS)
+def guardar_resultados(dict_resultados, ruta_archivo):
+    with pd.ExcelWriter(ruta_archivo) as file:
+        for hoja, df_a_guardar in dict_resultados.items():
+            print(hoja)
+            df_a_guardar.to_excel(file, sheet_name=hoja, index=False)
 
-with pd.ExcelWriter("prueba.xlsx") as file:
-    a.to_excel(file, sheet_name="a")
-    b.to_excel(file, sheet_name="b")
+
+if __name__ == "__main__":
+    resultados_poblacionales = calcular_casos_de_trazadoras(
+        RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS
+    )
+
+    guardar_resultados(resultados_poblacionales, RUTA_PLANILLA_OUTPUT)
