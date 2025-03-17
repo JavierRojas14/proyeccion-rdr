@@ -575,7 +575,6 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
 def guardar_resultados(dict_resultados, ruta_archivo):
     with pd.ExcelWriter(ruta_archivo) as file:
         for hoja, df_a_guardar in dict_resultados.items():
-            print(hoja)
             df_a_guardar.to_excel(file, sheet_name=hoja, index=False)
 
 
