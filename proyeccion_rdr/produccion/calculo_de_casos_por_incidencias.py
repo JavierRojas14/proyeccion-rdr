@@ -547,7 +547,7 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     )
 
     # Consolida los casos por macroprocesos en una unica tabla
-    columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente"]
+    columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente", "Estrato"]
     casos_macroprocesos_por_region = consolidar_casos_macroproceso(
         casos_a_hacerse_cargo_por_region,
         *casos_macroprocesos_por_region,
@@ -555,6 +555,7 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         columnas_indice,
     )
 
+    columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente"]
     casos_macroprocesos_consolidados = consolidar_casos_macroproceso(
         casos_a_hacerse_cargo_consolidados,
         *casos_macroprocesos_consolidados,
