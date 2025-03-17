@@ -2,7 +2,7 @@ import pandas as pd
 
 RUTA_PLANILLA_POBLACIONES = "data/interim/0.0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
 RUTA_PLANILLA_INCIDENCIAS = (
-    "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
+    "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_RDR.xlsx"
 )
 RUTA_PLANILLA_OUTPUT = "data/interim/0.1_casos_teoricos_diagnosticos.xlsx"
 
