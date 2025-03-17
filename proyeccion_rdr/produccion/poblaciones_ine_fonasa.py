@@ -452,7 +452,7 @@ if __name__ == "__main__":
     # Guardar o analizar resultados
     # print(poblaciones_fonasa_extrapoladas.head())
     # print(porcentaje_fonasa.head())
-    with pd.ExcelWriter("data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx") as file:
+    with pd.ExcelWriter("data/interim/0.0_poblaciones_ine_y_fonasa_a_utilizar.xlsx") as file:
         poblacion_ine.to_excel(file, sheet_name="poblacion_INE", index=False)
         poblacion_fonasa.to_excel(file, sheet_name="poblacion_FONASA", index=False)
         porcentaje_fonasa.reset_index().to_excel(
