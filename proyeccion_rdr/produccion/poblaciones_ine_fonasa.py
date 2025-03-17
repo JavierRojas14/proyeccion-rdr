@@ -410,6 +410,7 @@ if __name__ == "__main__":
         "todos": "",  # Todo el pais
         "hombres": "hombre_mujer == 1",  # Hombres
         "mujeres": "hombre_mujer == 2",  # Mujeres
+        "recien_nacidos_vivos_hombres": "Edad == 0 and hombre_mujer == 1",  # Recien Nacidos Vivos Hombres
         "recien_nacidos_vivos": "Edad == 0",  # Recien Nacidos Vivos
         "entre_1_y_14": "Edad >= 1 and Edad <= 14",  # Entre 1 y 14 anios de edad
         "entre_15_y_18": "Edad >= 15 and Edad <= 18",  # Entre 15 y 18 anios de edad
@@ -419,6 +420,7 @@ if __name__ == "__main__":
         "todos": "",  # Todo el pais
         "hombres": "SEXO == 'HOMBRE'",  # Hombres
         "mujeres": "SEXO == 'MUJER'",  # Mujeres
+        "recien_nacidos_vivos_hombres": "EDAD_TRAMO == 0 and SEXO == 'HOMBRE'",  # RNV Hombres
         "recien_nacidos_vivos": "EDAD_TRAMO == 0",  # Recien Nacidos Vivos (Incluye los de 1 y 2 anios)
         "entre_1_y_14": "EDAD_TRAMO < 15",  # Entre 0 y 14 anios de edad
         "entre_15_y_18": "EDAD_TRAMO == 15",  # Entre 15 y 19 anios
