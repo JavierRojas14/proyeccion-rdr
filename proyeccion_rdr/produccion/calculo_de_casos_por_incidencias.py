@@ -395,6 +395,94 @@ def unir_casos(df_original, df_nuevos_casos):
     return pd.concat([df_original, df_nuevos_casos])
 
 
+def obtener_casos_por_macroprocesos(
+    casos_por_region, casos_consolidados, porcentaje_uci, porcentaje_uti, porcentaje_medias
+):
+    # Obtiene los casos hospitalizados por region y consolidados
+    casos_hosp_por_region, casos_hosp_consolidados = calcular_casos_macroproceso(
+        casos_por_region,
+        casos_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Hospitalizados",
+    )
+
+    # Obtiene los casos UCI por region y consolidados
+    casos_uci_por_region, casos_uci_consolidados = calcular_casos_macroproceso(
+        casos_hosp_por_region,
+        casos_hosp_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Hospitalizados",
+        porcentaje_a_reemplazar=porcentaje_uci,
+    )
+
+    # Obtiene los casos UTI por region y consolidados
+    casos_uti_por_region, casos_uti_consolidados = calcular_casos_macroproceso(
+        casos_hosp_por_region,
+        casos_hosp_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Hospitalizados",
+        porcentaje_a_reemplazar=porcentaje_uti,
+    )
+
+    # Obtiene los casos Medias por region y consolidados
+    casos_medias_por_region, casos_medias_consolidados = calcular_casos_macroproceso(
+        casos_hosp_por_region,
+        casos_hosp_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Hospitalizados",
+        porcentaje_a_reemplazar=porcentaje_medias,
+    )
+
+    # Obtiene los casos quirurgicos por region y consolidados
+    casos_quir_por_region, casos_quir_consolidados = calcular_casos_macroproceso(
+        casos_por_region,
+        casos_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Quirúrgicos",
+    )
+
+    # Obtiene los casos quirurgicos CV por region y consolidados
+    casos_quir_CV_por_region, casos_quir_CV_consolidados = casos_quir_por_region.query(
+        "`Especialidad Quirúrgica` == 'CV'"
+    ), casos_quir_consolidados.query("`Especialidad Quirúrgica` == 'CV'")
+
+    # Obtiene los casos quirurgicos CT por region y consolidados
+    casos_quir_CT_por_region, casos_quir_CT_consolidados = casos_quir_por_region.query(
+        "`Especialidad Quirúrgica` == 'CT'"
+    ), casos_quir_consolidados.query("`Especialidad Quirúrgica` == 'CT'")
+
+    # Obtiene los casos de hemodinamia por region y consolidados
+    casos_hmd_por_region, casos_hmd_consolidados = calcular_casos_macroproceso(
+        casos_por_region,
+        casos_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes Hemodinamia",
+    )
+
+    return (
+        [
+            casos_hosp_por_region,
+            casos_uci_por_region,
+            casos_uti_por_region,
+            casos_medias_por_region,
+            casos_quir_por_region,
+            casos_quir_CV_por_region,
+            casos_quir_CT_por_region,
+            casos_hmd_por_region,
+        ],
+        [
+            casos_hosp_consolidados,
+            casos_uci_consolidados,
+            casos_uti_consolidados,
+            casos_medias_consolidados,
+            casos_quir_consolidados,
+            casos_quir_CV_consolidados,
+            casos_quir_CT_consolidados,
+            casos_hmd_consolidados,
+        ],
+    )
+
+
 def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Lee la planilla de poblaciones INE y FONASA, junto a las poblaciones atingentes
     poblaciones_ine, poblacion_fonasa, porcentaje_fonasa, poblaciones_fonasa_extrapoladas = (
@@ -439,121 +527,47 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         casos_a_hacerse_cargo_consolidados, casos_por_limite_oferta
     )
 
-    return (
-        casos_FONASA_por_region,
-        casos_a_hacerse_cargo_por_region,
-        casos_FONASA_consolidados,
-        casos_a_hacerse_cargo_consolidados,
+    # Obtiene los casos de camas UCI, UTI y Medias
+    PORCENTAJE_UCI = 0.21
+    PORCENTAJE_UTI = 0.42
+    PORCENTAJE_MEDIAS = 0.37
+
+    # Obtiene los casos por los macroprocesos
+    casos_macroprocesos_por_region, casos_macroprocesos_consolidados = (
+        obtener_casos_por_macroprocesos(
+            casos_a_hacerse_cargo_por_region,
+            casos_a_hacerse_cargo_consolidados,
+            PORCENTAJE_UCI,
+            PORCENTAJE_UTI,
+            PORCENTAJE_MEDIAS,
+        )
     )
+
+    # Consolida los casos por macroprocesos en una unica tabla
+    columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente"]
+    casos_macroprocesos_por_region = consolidar_casos_macroproceso(
+        casos_a_hacerse_cargo_por_region,
+        *casos_macroprocesos_por_region,
+        COLUMNAS_POBLACION_INE,
+        columnas_indice,
+    )
+
+    casos_macroprocesos_consolidados = consolidar_casos_macroproceso(
+        casos_a_hacerse_cargo_consolidados,
+        *casos_macroprocesos_consolidados,
+        COLUMNAS_POBLACION_INE,
+        columnas_indice,
+    )
+
+    return (casos_macroprocesos_por_region, casos_macroprocesos_consolidados)
 
 
 RUTA_PLANILLA_POBLACIONES = "data/interim/0_poblaciones_ine_y_fonasa_a_utilizar.xlsx"
 RUTA_PLANILLA_INCIDENCIAS = (
     "data/raw/3_incidencias_y_porcentajes_marcoprocesos/incidencias_y_prevalencias_INT.xlsx"
 )
-a, b, c, d = calcular_casos_de_trazadoras(RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS)
+a, b = calcular_casos_de_trazadoras(RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS)
 
 with pd.ExcelWriter("prueba.xlsx") as file:
     a.to_excel(file, sheet_name="a")
     b.to_excel(file, sheet_name="b")
-    c.to_excel(file, sheet_name="c")
-    d.to_excel(file, sheet_name="d")
-
-
-# # Obtiene los casos hospitalizados por region y consolidados
-# casos_hosp_por_region, casos_hosp_consolidados = calcular_casos_macroproceso(
-#     casos_a_hacerse_cargo_por_region,
-#     casos_a_hacerse_cargo_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Hospitalizados",
-# )
-
-# # Obtiene los casos de camas UCI, UTI y Medias
-# PORCENTAJE_UCI = 0.21
-# PORCENTAJE_UTI = 0.42
-# PORCENTAJE_MEDIAS = 0.37
-
-# # Obtiene los casos UCI por region y consolidados
-# casos_uci_por_region, casos_uci_consolidados = calcular_casos_macroproceso(
-#     casos_hosp_por_region,
-#     casos_hosp_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Hospitalizados",
-#     porcentaje_a_reemplazar=PORCENTAJE_UCI,
-# )
-
-# # Obtiene los casos UTI por region y consolidados
-# casos_uti_por_region, casos_uti_consolidados = calcular_casos_macroproceso(
-#     casos_hosp_por_region,
-#     casos_hosp_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Hospitalizados",
-#     porcentaje_a_reemplazar=PORCENTAJE_UTI,
-# )
-
-# # Obtiene los casos Medias por region y consolidados
-# casos_medias_por_region, casos_medias_consolidados = calcular_casos_macroproceso(
-#     casos_hosp_por_region,
-#     casos_hosp_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Hospitalizados",
-#     porcentaje_a_reemplazar=PORCENTAJE_MEDIAS,
-# )
-
-# # Obtiene los casos quirurgicos por region y consolidados
-# casos_quir_por_region, casos_quir_consolidados = calcular_casos_macroproceso(
-#     casos_a_hacerse_cargo_por_region,
-#     casos_a_hacerse_cargo_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Quirúrgicos",
-# )
-
-# # Obtiene los casos quirurgicos CV por region y consolidados
-# casos_quir_CV_por_region, casos_quir_CV_consolidados = casos_quir_por_region.query(
-#     "`Especialidad Quirúrgica` == 'CV'"
-# ), casos_quir_consolidados.query("`Especialidad Quirúrgica` == 'CV'")
-
-# # Obtiene los casos quirurgicos CT por region y consolidados
-# casos_quir_CT_por_region, casos_quir_CT_consolidados = casos_quir_por_region.query(
-#     "`Especialidad Quirúrgica` == 'CT'"
-# ), casos_quir_consolidados.query("`Especialidad Quirúrgica` == 'CT'")
-
-# # Obtiene los casos de hemodinamia por region y consolidados
-# casos_hmd_por_region, casos_hmd_consolidados = calcular_casos_macroproceso(
-#     casos_a_hacerse_cargo_por_region,
-#     casos_a_hacerse_cargo_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     "Porcentaje Pacientes Hemodinamia",
-# )
-
-# # Consolida los casos por region
-# columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente", "Estrato"]
-# casos_macroprocesos_por_region = consolidar_casos_macroproceso(
-#     casos_a_hacerse_cargo_por_region,
-#     casos_hosp_por_region,
-#     casos_uci_por_region,
-#     casos_uti_por_region,
-#     casos_medias_por_region,
-#     casos_quir_por_region,
-#     casos_quir_CV_por_region,
-#     casos_quir_CT_por_region,
-#     casos_hmd_por_region,
-#     COLUMNAS_POBLACION_INE,
-#     columnas_indice,
-# )
-
-# # Consolida los casos totales por macroproceso
-# columnas_indice = ["Diagnostico", "Diagnosticos Contenidos", "tipo_paciente"]
-# casos_macroprocesos_consolidados = consolidar_casos_macroproceso(
-#     casos_a_hacerse_cargo_consolidados,
-#     casos_hosp_consolidados,
-#     casos_uci_consolidados,
-#     casos_uti_consolidados,
-#     casos_medias_consolidados,
-#     casos_quir_consolidados,
-#     casos_quir_CV_consolidados,
-#     casos_quir_CT_consolidados,
-#     casos_hmd_consolidados,
-#     COLUMNAS_POBLACION_INE,
-#     columnas_indice,
-# )
