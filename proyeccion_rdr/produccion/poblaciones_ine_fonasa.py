@@ -379,6 +379,7 @@ def procesar_poblaciones(
     # Calcular porcentaje FONASA y cambia el porcentaje de los recien nacidos vivos
     porcentajes_fonasa = calcular_porcentaje_fonasa(poblaciones_ine, poblaciones_fonasa)
     porcentajes_fonasa.loc[("recien_nacidos_vivos")] = 1
+    porcentajes_fonasa.loc[("recien_nacidos_vivos_hombres")] = 1
 
     # Extrapolar poblaciones FONASA
     PORCENTAJE_FONASA_A_UTILIZAR = "porcentaje_fonasa_2022"
