@@ -289,19 +289,29 @@ def preparar_estratos_fonasa(df_fonasa, todos_los_servicios_rm):
     return estratos
 
 
-def calcular_porcentaje_fonasa(poblaciones_ine, poblaciones_fonasa):
+def calcular_porcentaje_fonasa(poblaciones_ine, poblaciones_fonasa, columnas_anios_a_calcular):
     """
     Calcula el porcentaje FONASA basado en las poblaciones INE y FONASA.
 
     Args:
         poblaciones_ine (pd.DataFrame): DataFrame de poblaciones INE.
         poblaciones_fonasa (pd.DataFrame): DataFrame de poblaciones FONASA.
+        columnas_anios_a_calcular (list): Lista con los anios que se utilizar para calcular los %
 
     Returns:
         pd.DataFrame: DataFrame con los porcentajes FONASA.
     """
     print("> Calculando cada uno de los porcentajes por estratos y grupos etarios")
-    porcentaje = (poblaciones_fonasa / poblaciones_ine).dropna(axis=1, how="all")
+    # Solamente deja las columnas que se quieran utilizar para calcular el %
+    poblaciones_ine_anios_interes = poblaciones_ine[columnas_anios_a_calcular].copy()
+    poblaciones_fonasa_anios_interes = poblaciones_fonasa[columnas_anios_a_calcular].copy()
+
+    # Calcula el acumulado del periodo
+    poblaciones_ine_anios_interes["acumulado"] = poblaciones_ine_anios_interes.sum(axis=1)
+    poblaciones_fonasa_anios_interes["acumulado"] = poblaciones_fonasa_anios_interes.sum(axis=1)
+
+    # Calcula el porcentaje para cada estrato
+    porcentaje = poblaciones_fonasa_anios_interes / poblaciones_ine_anios_interes
     porcentaje.columns = "porcentaje_fonasa_" + porcentaje.columns
     return porcentaje
 
@@ -377,7 +387,10 @@ def procesar_poblaciones(
     )
 
     # Calcular porcentaje FONASA y cambia el porcentaje de los recien nacidos vivos
-    porcentajes_fonasa = calcular_porcentaje_fonasa(poblaciones_ine, poblaciones_fonasa)
+    columnas_anios_a_calcular = ["2018", "2019", "2020", "2021", "2022"]
+    porcentajes_fonasa = calcular_porcentaje_fonasa(
+        poblaciones_ine, poblaciones_fonasa, columnas_anios_a_calcular
+    )
     porcentajes_fonasa.loc[("recien_nacidos_vivos")] = 1
     porcentajes_fonasa.loc[("recien_nacidos_vivos_hombres")] = 1
 
