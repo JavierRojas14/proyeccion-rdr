@@ -399,6 +399,7 @@ def procesar_poblaciones(
     porcentajes_fonasa.loc["recien_nacidos_vivos"] = porcentaje_fonasa_0_a_19
     porcentajes_fonasa.loc["entre_1_y_14"] = porcentaje_fonasa_0_a_19
     porcentajes_fonasa.loc["entre_15_y_18"] = porcentaje_fonasa_0_a_19
+    porcentajes_fonasa.loc["entre_0_y_18"] = porcentaje_fonasa_0_a_19
 
     # Extrapolar poblaciones FONASA
     PORCENTAJE_FONASA_A_UTILIZAR = "porcentaje_fonasa_acumulado"
@@ -437,6 +438,7 @@ if __name__ == "__main__":
         "entre_1_y_14": "Edad >= 1 and Edad <= 14",  # Entre 1 y 14 anios de edad
         "entre_15_y_18": "Edad >= 15 and Edad <= 18",  # Entre 15 y 18 anios de edad
         "entre_0_y_19": "Edad <= 19",  # Entre los 0 y 19 anios
+        "entre_0_y_18": "Edad <= 18",  # Entre los 0 y 18 anios
     }
     QUERY_STRINGS_FONASA = {
         "todos": "",  # Todo el pais
@@ -447,6 +449,7 @@ if __name__ == "__main__":
         "entre_1_y_14": "EDAD_TRAMO < 15",  # Entre 0 y 14 anios de edad
         "entre_15_y_18": "EDAD_TRAMO == 15",  # Entre 15 y 19 anios
         "entre_0_y_19": "EDAD_TRAMO < 20",  # Entre 0 y 19 anios
+        "entre_0_y_18": "EDAD_TRAMO < 20",  # Es igual a entre 0 y 19 anios
     }
 
     # Procesar datos
