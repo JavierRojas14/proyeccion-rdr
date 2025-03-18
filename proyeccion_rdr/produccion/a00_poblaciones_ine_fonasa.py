@@ -396,6 +396,8 @@ def procesar_poblaciones(
     )
 
     return (
+        df_ine,
+        df_fonasa,
         poblaciones_ine,
         poblaciones_fonasa,
         porcentajes_fonasa,
@@ -429,15 +431,20 @@ if __name__ == "__main__":
     }
 
     # Procesar datos
-    poblacion_ine, poblacion_fonasa, porcentaje_fonasa, poblaciones_fonasa_extrapoladas = (
-        procesar_poblaciones(
-            RUTA_INE,
-            RUTA_FONASA,
-            TODOS_LOS_SERVICIOS_RM,
-            QUERY_STRINGS_INE,
-            QUERY_STRINGS_FONASA,
-            COLUMNAS_POBLACION_INE,
-        )
+    (
+        df_ine,
+        df_fonasa,
+        poblacion_ine,
+        poblacion_fonasa,
+        porcentaje_fonasa,
+        poblaciones_fonasa_extrapoladas,
+    ) = procesar_poblaciones(
+        RUTA_INE,
+        RUTA_FONASA,
+        TODOS_LOS_SERVICIOS_RM,
+        QUERY_STRINGS_INE,
+        QUERY_STRINGS_FONASA,
+        COLUMNAS_POBLACION_INE,
     )
 
     # Guardar o analizar resultados
