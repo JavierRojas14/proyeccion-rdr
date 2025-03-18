@@ -391,11 +391,17 @@ def procesar_poblaciones(
     porcentajes_fonasa = calcular_porcentaje_fonasa(
         poblaciones_ine, poblaciones_fonasa, columnas_anios_a_calcular
     )
-    porcentajes_fonasa.loc[("recien_nacidos_vivos")] = 1
-    porcentajes_fonasa.loc[("recien_nacidos_vivos_hombres")] = 1
+
+    # Extrae el porcentaje fonasa del grupo etario de 0 a 19
+    porcentaje_fonasa_0_a_19 = porcentajes_fonasa.loc["entre_0_y_19"].values
+
+    # Asigna el porcentaje anterior a tales estratos
+    porcentajes_fonasa.loc["recien_nacidos_vivos"] = porcentaje_fonasa_0_a_19
+    porcentajes_fonasa.loc["entre_1_y_14"] = porcentaje_fonasa_0_a_19
+    porcentajes_fonasa.loc["entre_15_y_18"] = porcentaje_fonasa_0_a_19
 
     # Extrapolar poblaciones FONASA
-    PORCENTAJE_FONASA_A_UTILIZAR = "porcentaje_fonasa_2022"
+    PORCENTAJE_FONASA_A_UTILIZAR = "porcentaje_fonasa_acumulado"
     poblaciones_fonasa_extrapoladas = extrapolar_poblacion_fonasa(
         poblaciones_ine, porcentajes_fonasa, PORCENTAJE_FONASA_A_UTILIZAR
     )
