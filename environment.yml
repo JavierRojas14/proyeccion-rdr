@@ -20,6 +20,8 @@ dependencies:
   - polars
   - pyarrow
   - scikit-learn
+  - tabulate
+  - holidays
   - pip:
       - python-dotenv
       - mkdocs
