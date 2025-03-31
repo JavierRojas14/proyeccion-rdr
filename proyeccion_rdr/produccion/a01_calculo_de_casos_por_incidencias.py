@@ -572,6 +572,38 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     }
 
 
+def generar_resumen_total_hospital(
+    incidencias,
+    casos_area_de_estudio,
+    casos_INE,
+    casos_FONASA,
+    casos_FONASA_consolidados,
+    casos_a_hacerse_cargo_consolidados,
+    columnas_poblacion,
+):
+    # Define las columnas de incidencias
+    resumen_incidencias = incidencias[COLUMNAS_INCIDENCIA]
+
+    # Obtiene datos de area de estudio
+    resumen_area_de_estudio = casos_area_de_estudio.set_index(COLUMNAS_INCIDENCIA)
+
+    # Obtiene casos INE
+    resumen_casos_INE = casos_INE.query("Estrato == 'Pais'").set_index(COLUMNAS_INCIDENCIA)
+
+    # Obtiene los casos FONASA a nivel Pais
+    resumen_casos_FONASA = casos_FONASA.query("Estrato == 'Pais'").set_index(COLUMNAS_INCIDENCIA)
+
+    # # Obtiene casos de Area de Influencia Totales
+    resumen_area_de_influencia_INT = casos_FONASA_consolidados.set_index(COLUMNAS_INCIDENCIA)
+
+    # Obtiene el porcentaje a hacerse cargo del area de influencia
+
+    # Obtiene casos a hacerse cargo del area de influencia
+    resumen_casos_a_hacerse_cargo_INT = casos_a_hacerse_cargo_consolidados.set_index(
+        COLUMNAS_INCIDENCIA
+    )
+
+
 def guardar_resultados(dict_resultados, ruta_archivo):
     with pd.ExcelWriter(ruta_archivo) as file:
         for hoja, df_a_guardar in dict_resultados.items():
