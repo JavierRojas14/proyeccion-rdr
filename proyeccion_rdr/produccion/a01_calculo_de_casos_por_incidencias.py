@@ -564,7 +564,9 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     )
 
     return {
-        "casos_teoricos_INE": casos_INE,
+        "incidencias": incidencias.reset_index(),
+        "casos_area_de_estudio": poblacion_area_de_estudio.reset_index(),
+        "casos_teoricos_INE": casos_INE.reset_index(),
         "casos_teoricos_FONASA": casos_FONASA.reset_index(),
         "casos_macroproceso_por_region": casos_macroprocesos_por_region.reset_index(),
         "casos_macroproceso_consolidado": casos_macroprocesos_consolidados.reset_index(),
@@ -575,33 +577,43 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
 def generar_resumen_total_hospital(
     incidencias,
     casos_area_de_estudio,
-    casos_INE,
-    casos_FONASA,
-    casos_FONASA_consolidados,
+    casos_ine,
+    casos_fonasa,
+    casos_fonasa_consolidados,
     casos_a_hacerse_cargo_consolidados,
     columnas_poblacion,
 ):
-    # Define las columnas de incidencias
-    resumen_incidencias = incidencias[COLUMNAS_INCIDENCIA]
-
     # Obtiene datos de area de estudio
-    resumen_area_de_estudio = casos_area_de_estudio.set_index(COLUMNAS_INCIDENCIA)
+    resumen_area_de_estudio = casos_area_de_estudio.set_index(columnas_poblacion)
 
     # Obtiene casos INE
-    resumen_casos_INE = casos_INE.query("Estrato == 'Pais'").set_index(COLUMNAS_INCIDENCIA)
+    resumen_casos_ine = casos_ine.query("Estrato == 'Pais'").set_index(columnas_poblacion)
 
     # Obtiene los casos FONASA a nivel Pais
-    resumen_casos_FONASA = casos_FONASA.query("Estrato == 'Pais'").set_index(COLUMNAS_INCIDENCIA)
+    resumen_casos_fonasa = casos_fonasa.query("Estrato == 'Pais'").set_index(columnas_poblacion)
 
     # # Obtiene casos de Area de Influencia Totales
-    resumen_area_de_influencia_INT = casos_FONASA_consolidados.set_index(COLUMNAS_INCIDENCIA)
+    # resumen_area_de_influencia = casos_fonasa_consolidados.set_index(columnas_poblacion)
 
     # Obtiene el porcentaje a hacerse cargo del area de influencia
 
     # Obtiene casos a hacerse cargo del area de influencia
-    resumen_casos_a_hacerse_cargo_INT = casos_a_hacerse_cargo_consolidados.set_index(
-        COLUMNAS_INCIDENCIA
-    )
+    resumen_casos_a_hacerse_cargo = casos_a_hacerse_cargo_consolidados.set_index(columnas_poblacion)
+
+    # Obtiene el resumen total de casos teoricos
+    resumen_total_casos_teoricos = pd.DataFrame(
+        {
+            "poblacion_ine_2035_area_de_estudio": resumen_area_de_estudio["2035"],
+            "casos_teoricos_ine_2035_area_de_estudio": resumen_casos_ine["2035"],
+            # "porcentaje_fonasa_pais": resumen_porcentaje_FONASA,
+            "casos_teoricos_fonasa_2035_area_de_estudio": resumen_casos_fonasa["2035"],
+            # "casos_teoricos_fonasa_2035_area_de_influencia": resumen_area_de_influencia["2035"],
+            "casos_teoricos_fonasa_2035_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2035"],
+        },
+        index=resumen_casos_a_hacerse_cargo.index,
+    ).reset_index()
+
+    return resumen_total_casos_teoricos
 
 
 def guardar_resultados(dict_resultados, ruta_archivo):
@@ -614,5 +626,17 @@ if __name__ == "__main__":
     resultados_poblacionales = calcular_casos_de_trazadoras(
         RUTA_PLANILLA_POBLACIONES, RUTA_PLANILLA_INCIDENCIAS
     )
+
+    resumen_total = generar_resumen_total_hospital(
+        incidencias=resultados_poblacionales["incidencias"],
+        casos_area_de_estudio=resultados_poblacionales["casos_area_de_estudio"],
+        casos_ine=resultados_poblacionales["casos_teoricos_INE"],
+        casos_fonasa=resultados_poblacionales["casos_teoricos_FONASA"],
+        casos_fonasa_consolidados=resultados_poblacionales["casos_macroproceso_por_region"],
+        casos_a_hacerse_cargo_consolidados=resultados_poblacionales["casos_a_hacerse_cargo_INT"],
+        columnas_poblacion=COLUMNAS_INCIDENCIA,
+    )
+
+    resultados_poblacionales["resumen_total_RDR"] = resumen_total
 
     guardar_resultados(resultados_poblacionales, RUTA_PLANILLA_OUTPUT)
