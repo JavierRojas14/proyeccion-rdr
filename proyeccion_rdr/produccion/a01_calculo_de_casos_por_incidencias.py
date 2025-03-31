@@ -488,8 +488,8 @@ def obtener_casos_por_macroprocesos(
 
 def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Lee la planilla de poblaciones INE y FONASA, junto a las poblaciones atingentes
-    poblaciones_ine, poblacion_fonasa, porcentaje_fonasa, poblaciones_fonasa_extrapoladas = (
-        leer_planilla_poblaciones(ruta_poblaciones)
+    poblaciones_ine, _, _, poblaciones_fonasa_extrapoladas = leer_planilla_poblaciones(
+        ruta_poblaciones
     )
 
     # Lee la planilla de trazadoras del hospital
@@ -504,9 +504,9 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
 
     # Acota los casos calculados solamente a los casos que requiere el hospital
     (
-        casos_FONASA_por_region,
+        _,
         casos_a_hacerse_cargo_por_region,
-        casos_FONASA_consolidados,
+        casos_fonasa_consolidados,
         casos_a_hacerse_cargo_consolidados,
     ) = acotar_casos_de_problemas_de_salud_a_areas_de_influencias_hospital(
         casos_FONASA,
@@ -564,11 +564,10 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     )
 
     return {
-        "incidencias": incidencias.reset_index(),
         "casos_area_de_estudio": poblacion_area_de_estudio.reset_index(),
         "casos_teoricos_INE": casos_INE.reset_index(),
         "casos_teoricos_FONASA": casos_FONASA.reset_index(),
-        "casos_fonasa_consolidados": casos_FONASA_consolidados.reset_index(),
+        "casos_fonasa_consolidados": casos_fonasa_consolidados.reset_index(),
         "casos_macroproceso_por_region": casos_macroprocesos_por_region.reset_index(),
         "casos_macroproceso_consolidado": casos_macroprocesos_consolidados.reset_index(),
         "casos_a_hacerse_cargo_INT": casos_a_hacerse_cargo_consolidados,
@@ -576,7 +575,6 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
 
 
 def generar_resumen_total_hospital(
-    incidencias,
     casos_area_de_estudio,
     casos_ine,
     casos_fonasa,
@@ -655,7 +653,6 @@ if __name__ == "__main__":
     )
 
     resumen_total = generar_resumen_total_hospital(
-        incidencias=resultados_poblacionales["incidencias"],
         casos_area_de_estudio=resultados_poblacionales["casos_area_de_estudio"],
         casos_ine=resultados_poblacionales["casos_teoricos_INE"],
         casos_fonasa=resultados_poblacionales["casos_teoricos_FONASA"],
