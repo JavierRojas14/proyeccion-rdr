@@ -568,6 +568,7 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         "casos_area_de_estudio": poblacion_area_de_estudio.reset_index(),
         "casos_teoricos_INE": casos_INE.reset_index(),
         "casos_teoricos_FONASA": casos_FONASA.reset_index(),
+        "casos_fonasa_consolidados": casos_FONASA_consolidados.reset_index(),
         "casos_macroproceso_por_region": casos_macroprocesos_por_region.reset_index(),
         "casos_macroproceso_consolidado": casos_macroprocesos_consolidados.reset_index(),
         "casos_a_hacerse_cargo_INT": casos_a_hacerse_cargo_consolidados,
@@ -592,10 +593,10 @@ def generar_resumen_total_hospital(
     # Obtiene los casos FONASA a nivel Pais
     resumen_casos_fonasa = casos_fonasa.query("Estrato == 'Pais'").set_index(columnas_poblacion)
 
-    # # Obtiene casos de Area de Influencia Totales
-    # resumen_area_de_influencia = casos_fonasa_consolidados.set_index(columnas_poblacion)
-
     # Obtiene el porcentaje a hacerse cargo del area de influencia
+
+    # # Obtiene casos de Area de Influencia Totales
+    resumen_area_de_influencia = casos_fonasa_consolidados.set_index(columnas_poblacion)
 
     # Obtiene casos a hacerse cargo del area de influencia
     resumen_casos_a_hacerse_cargo = casos_a_hacerse_cargo_consolidados.set_index(columnas_poblacion)
@@ -605,13 +606,39 @@ def generar_resumen_total_hospital(
         {
             "poblacion_ine_2035_area_de_estudio": resumen_area_de_estudio["2035"],
             "casos_teoricos_ine_2035_area_de_estudio": resumen_casos_ine["2035"],
-            # "porcentaje_fonasa_pais": resumen_porcentaje_FONASA,
             "casos_teoricos_fonasa_2035_area_de_estudio": resumen_casos_fonasa["2035"],
-            # "casos_teoricos_fonasa_2035_area_de_influencia": resumen_area_de_influencia["2035"],
+            "casos_teoricos_fonasa_2035_area_de_influencia": resumen_area_de_influencia["2035"],
             "casos_teoricos_fonasa_2035_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2035"],
         },
         index=resumen_casos_a_hacerse_cargo.index,
     ).reset_index()
+
+    # Obtiene el porcentaje de FONASA
+    resumen_total_casos_teoricos["porcentaje_fonasa_pais"] = (
+        resumen_total_casos_teoricos["casos_teoricos_fonasa_2035_area_de_estudio"]
+        / resumen_total_casos_teoricos["casos_teoricos_ine_2035_area_de_estudio"]
+    )
+
+    # Reordena las columnas del resumen
+    orden_resumen_columnas = [
+        "Diagnostico",
+        "Diagnosticos Contenidos",
+        "Diagnostico agregado en el macroproceso",
+        "Estadística",
+        "Casos (Cada 100.000)",
+        "Edad Incidencia",
+        "poblacion_ine_2035_area_de_estudio",
+        "casos_teoricos_ine_2035_area_de_estudio",
+        "porcentaje_fonasa_pais",
+        "casos_teoricos_fonasa_2035_area_de_estudio",
+        "Área de Influencia Formal",
+        "Área de Influencia Propuesta",
+        "casos_teoricos_fonasa_2035_area_de_influencia",
+        "Casos a hacerse cargo del Área de Influencia Propuesta",
+        "casos_teoricos_fonasa_2035_a_hacerse_cargo",
+    ]
+
+    resumen_total_casos_teoricos = resumen_total_casos_teoricos[orden_resumen_columnas]
 
     return resumen_total_casos_teoricos
 
@@ -632,7 +659,7 @@ if __name__ == "__main__":
         casos_area_de_estudio=resultados_poblacionales["casos_area_de_estudio"],
         casos_ine=resultados_poblacionales["casos_teoricos_INE"],
         casos_fonasa=resultados_poblacionales["casos_teoricos_FONASA"],
-        casos_fonasa_consolidados=resultados_poblacionales["casos_macroproceso_por_region"],
+        casos_fonasa_consolidados=resultados_poblacionales["casos_fonasa_consolidados"],
         casos_a_hacerse_cargo_consolidados=resultados_poblacionales["casos_a_hacerse_cargo_INT"],
         columnas_poblacion=COLUMNAS_INCIDENCIA,
     )
