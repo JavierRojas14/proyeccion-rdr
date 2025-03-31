@@ -3,10 +3,14 @@ from pathlib import Path
 import pandas as pd
 import polars as pl
 import typer
+from holidays import country_holidays
 from loguru import logger
+from tabulate import tabulate
 from tqdm import tqdm
 
 from proyeccion_rdr.config import PROCESSED_DATA_DIR
+
+FERIADOS_CHILE = country_holidays("CL")
 
 app = typer.Typer()
 
@@ -94,6 +98,57 @@ def calcular_resumen_metricas_desagregadas_y_agrupadas_en_anios(df, ano_inicio, 
     resumen = pd.concat([metricas_desagregadas, metricas_agrupadas], axis=1)
 
     return resumen
+
+
+def obtener_cantidad_de_dias_laborales_por_anio(fecha_inicio, fecha_termino):
+    dias_laborales = pd.DataFrame(
+        {
+            "fecha": pd.date_range(
+                start=fecha_inicio,
+                end=fecha_termino,
+                freq="B",
+            )
+        }
+    )
+
+    dias_laborales["es_feriado"] = dias_laborales["fecha"].apply(es_feriado)
+    dias_laborales = dias_laborales.query("es_feriado == 0")
+    dias_laborales = dias_laborales.groupby(dias_laborales["fecha"].dt.year).size()
+    dias_laborales.index = pd.to_datetime(dias_laborales.index, format="%Y")
+
+    return dias_laborales
+
+
+def es_feriado(fecha):
+    if FERIADOS_CHILE.get(fecha):
+        return 1
+
+    else:
+        return 0
+
+
+def calcular_horas_laborales(anio_inicio, anio_termino, horas_por_dia):
+    """
+    Calcula la cantidad de horas laborales por año.
+
+    Args:
+    anio_inicio (int): Año de inicio.
+    anio_termino (int): Año de término.
+    horas_por_dia (int): Horas de trabajo por día.
+
+    Returns:
+    Series: Horas laborales por año.
+    """
+    cantidad_dias_laborales = obtener_cantidad_de_dias_laborales_por_anio(
+        f"01-01-{anio_inicio}", f"01-01-{anio_termino + 1}"
+    )
+    cantidad_dias_laborales.index = cantidad_dias_laborales.index.year.astype(str)
+    horas_laborales = cantidad_dias_laborales * horas_por_dia
+    horas_laborales.name = f"horas_laborales_funcionamiento_de_{horas_por_dia}_horas"
+    print("Horas laborales por año calculadas:")
+    print(tabulate(horas_laborales.head().reset_index(), headers="keys", tablefmt="pretty"))
+    print()
+    return horas_laborales
 
 
 @app.command()
