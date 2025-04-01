@@ -20,6 +20,7 @@ COLUMNAS_INCIDENCIA = [
     "Porcentaje Pacientes Quirúrgicos",
     "Especialidad Quirúrgica",
     "Porcentaje Pacientes Hemodinamia",
+    "Porcentaje Pacientes CMA",
 ]
 
 ANIO_INICIO = 2017
@@ -289,6 +290,7 @@ def consolidar_casos_macroproceso(
     casos_cv,
     casos_ct,
     casos_hmd,
+    casos_cma,
     columnas_anios,
     indice_a_asginar,
 ):
@@ -302,6 +304,7 @@ def consolidar_casos_macroproceso(
     casos_cv = casos_cv.copy()
     casos_ct = casos_ct.copy()
     casos_hmd = casos_hmd.copy()
+    casos_cma = casos_cma.copy()
 
     # Genera una columna indicadora
     casos_area_de_infl["tipo_paciente"] = "area_de_influencia"
@@ -313,6 +316,7 @@ def consolidar_casos_macroproceso(
     casos_cv["tipo_paciente"] = "CV"
     casos_ct["tipo_paciente"] = "CT"
     casos_hmd["tipo_paciente"] = "hmd"
+    casos_cma["tipo_paciente"] = "cma"
 
     # Pone como indice el Diagnostico, tipo de paciente y estrato
     casos_area_de_infl = casos_area_de_infl[indice_a_asginar + columnas_anios]
@@ -324,6 +328,7 @@ def consolidar_casos_macroproceso(
     casos_cv = casos_cv[indice_a_asginar + columnas_anios]
     casos_ct = casos_ct[indice_a_asginar + columnas_anios]
     casos_hmd = casos_hmd[indice_a_asginar + columnas_anios]
+    casos_Cma = casos_cma[indice_a_asginar + columnas_anios]
 
     # Consolida los casos
     resumen_casos = pd.concat(
@@ -337,6 +342,7 @@ def consolidar_casos_macroproceso(
             casos_cv,
             casos_ct,
             casos_hmd,
+            casos_cma,
         ]
     )
     resumen_casos["Diagnostico"] = resumen_casos["Diagnostico"].str.split(" - ").str[0]
@@ -462,6 +468,14 @@ def obtener_casos_por_macroprocesos(
         "Porcentaje Pacientes Hemodinamia",
     )
 
+    # Obtiene los casos de CMA por region y consolidados
+    casos_cma_por_region, casos_cma_consolidados = calcular_casos_macroproceso(
+        casos_por_region,
+        casos_consolidados,
+        COLUMNAS_POBLACION_INE,
+        "Porcentaje Pacientes CMA",
+    )
+
     return (
         [
             casos_hosp_por_region,
@@ -472,6 +486,7 @@ def obtener_casos_por_macroprocesos(
             casos_quir_CV_por_region,
             casos_quir_CT_por_region,
             casos_hmd_por_region,
+            casos_cma_por_region,
         ],
         [
             casos_hosp_consolidados,
@@ -482,6 +497,7 @@ def obtener_casos_por_macroprocesos(
             casos_quir_CV_consolidados,
             casos_quir_CT_consolidados,
             casos_hmd_consolidados,
+            casos_cma_consolidados,
         ],
     )
 
