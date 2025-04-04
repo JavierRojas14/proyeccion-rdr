@@ -440,6 +440,7 @@ if __name__ == "__main__":
         "entre_15_y_18": "Edad >= 15 and Edad <= 18",  # Entre 15 y 18 anios de edad
         "entre_0_y_19": "Edad <= 19",  # Entre los 0 y 19 anios
         "entre_0_y_18": "Edad <= 18",  # Entre los 0 y 18 anios
+        "hasta_3": "Edad < 3",  # Hasta 3 anios
     }
     QUERY_STRINGS_FONASA = {
         "todos": "",  # Todo el pais
@@ -451,6 +452,7 @@ if __name__ == "__main__":
         "entre_15_y_18": "EDAD_TRAMO == 15",  # Entre 15 y 19 anios
         "entre_0_y_19": "EDAD_TRAMO < 20",  # Entre 0 y 19 anios
         "entre_0_y_18": "EDAD_TRAMO < 20",  # Es igual a entre 0 y 19 anios
+        "hasta_3": "EDAD_TRAMO == 0",  # Hasta 3 anios (0, 1 y 2 anios)
     }
 
     # Procesar datos
