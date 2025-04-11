@@ -328,7 +328,7 @@ def consolidar_casos_macroproceso(
     casos_cv = casos_cv[indice_a_asginar + columnas_anios]
     casos_ct = casos_ct[indice_a_asginar + columnas_anios]
     casos_hmd = casos_hmd[indice_a_asginar + columnas_anios]
-    casos_Cma = casos_cma[indice_a_asginar + columnas_anios]
+    casos_cma = casos_cma[indice_a_asginar + columnas_anios]
 
     # Consolida los casos
     resumen_casos = pd.concat(
