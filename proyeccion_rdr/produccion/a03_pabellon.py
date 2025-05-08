@@ -2,6 +2,16 @@ import pandas as pd
 from tabulate import tabulate
 
 
+def calcular_cantidad_int_q(casos_quirurgicos, int_q_por_paciente):
+    """Calcula la cantidad de int. q por paciente segun el diagnostico"""
+    cantidad_int_q = casos_quirurgicos.mul(int_q_por_paciente, axis=0)
+    print("Cantidad de Int. Q por diagnostico:")
+    print(tabulate(cantidad_int_q.head(), headers="keys", tablefmt="pretty"))
+    print()
+
+    return cantidad_int_q
+
+
 def calcular_tiempo_utilizado_pabellon(casos_quirurgicos, duraciones_int_q):
     """
     Calcula el tiempo utilizado en pabellón multiplicando casos quirúrgicos por duraciones.
