@@ -100,25 +100,6 @@ def calcular_resumen_metricas_desagregadas_y_agrupadas_en_anios(df, ano_inicio, 
     return resumen
 
 
-def obtener_cantidad_de_dias_laborales_por_anio(fecha_inicio, fecha_termino):
-    dias_laborales = pd.DataFrame(
-        {
-            "fecha": pd.date_range(
-                start=fecha_inicio,
-                end=fecha_termino,
-                freq="B",
-            )
-        }
-    )
-
-    dias_laborales["es_feriado"] = dias_laborales["fecha"].apply(es_feriado)
-    dias_laborales = dias_laborales.query("es_feriado == 0")
-    dias_laborales = dias_laborales.groupby(dias_laborales["fecha"].dt.year).size()
-    dias_laborales.index = pd.to_datetime(dias_laborales.index, format="%Y")
-
-    return dias_laborales
-
-
 def es_feriado(fecha):
     if FERIADOS_CHILE.get(fecha):
         return 1
@@ -127,28 +108,78 @@ def es_feriado(fecha):
         return 0
 
 
-def calcular_horas_laborales(anio_inicio, anio_termino, horas_por_dia):
+def obtener_dias_laborales(
+    fecha_inicio,
+    fecha_termino,
+    incluir_sabado=False,
+):
+    if incluir_sabado:
+        fechas = pd.date_range(start=fecha_inicio, end=fecha_termino, freq="D")
+        df = pd.DataFrame({"fecha": fechas})
+        df["dia_semana"] = df["fecha"].dt.dayofweek  # 0=lunes, ..., 6=domingo
+        df = df[df["dia_semana"] <= 5]  # lunes a sábado
+    else:
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range(
+                    start=fecha_inicio, end=fecha_termino, freq="B"
+                )  # lunes a viernes
+            }
+        )
+        df["dia_semana"] = df["fecha"].dt.dayofweek
+
+    df["es_feriado"] = df["fecha"].apply(es_feriado)
+    df = df[df["es_feriado"] == 0]
+
+    return df
+
+
+def calcular_horas_laborales(
+    anio_inicio,
+    anio_termino,
+    horas_por_dia_semana=8,
+    incluir_sabado=False,
+    horas_sabado=6,
+):
     """
-    Calcula la cantidad de horas laborales por año.
+    Calcula horas laborales por año, con opción de incluir sábados.
 
     Args:
     anio_inicio (int): Año de inicio.
     anio_termino (int): Año de término.
-    horas_por_dia (int): Horas de trabajo por día.
+    horas_por_dia_semana (int): Horas de trabajo de lunes a viernes.
+    incluir_sabado (bool): Si se deben incluir los sábados.
+    horas_sabado (int): Horas de trabajo los sábados (si se incluyen).
 
     Returns:
     Series: Horas laborales por año.
     """
-    cantidad_dias_laborales = obtener_cantidad_de_dias_laborales_por_anio(
-        f"01-01-{anio_inicio}", f"01-01-{anio_termino + 1}"
+    df = obtener_dias_laborales(f"01-01-{anio_inicio}", f"01-01-{anio_termino + 1}", incluir_sabado)
+
+    df["anio"] = df["fecha"].dt.year
+
+    if incluir_sabado:
+        df["horas_laborales"] = df["dia_semana"].apply(
+            lambda x: horas_sabado if x == 5 else horas_por_dia_semana
+        )
+    else:
+        df["horas_laborales"] = horas_por_dia_semana
+
+    horas_por_anio = df.groupby("anio")["horas_laborales"].sum()
+    horas_por_anio.index = horas_por_anio.index.astype(str)
+
+    nombre_columna = (
+        f"horas_laborales_con_sabado_{horas_sabado}h"
+        if incluir_sabado
+        else f"horas_laborales_solo_semana_{horas_por_dia_semana}h"
     )
-    cantidad_dias_laborales.index = cantidad_dias_laborales.index.year.astype(str)
-    horas_laborales = cantidad_dias_laborales * horas_por_dia
-    horas_laborales.name = f"horas_laborales_funcionamiento_de_{horas_por_dia}_horas"
+    horas_por_anio.name = nombre_columna
+
     print("Horas laborales por año calculadas:")
-    print(tabulate(horas_laborales.head().reset_index(), headers="keys", tablefmt="pretty"))
+    print(tabulate(horas_por_anio.head().reset_index(), headers="keys", tablefmt="pretty"))
     print()
-    return horas_laborales
+
+    return horas_por_anio
 
 
 @app.command()
