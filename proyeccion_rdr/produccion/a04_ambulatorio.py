@@ -41,6 +41,18 @@ REEMPLAZOS_ESPECIALIDADES_MEDICAS = {
     "UROLOGÍA": ["UROLOGIA INFANTIL"],
 }
 
+REEMPLAZOS_ESPECIALIDADES_NO_MEDICAS = {
+    "ENFERMERÍA": ["ENFERMERA"],
+    "MEDICINA INTEGRATIVA": ["KINESIOLOGOS", "FONOAUDIOLOGA", "ODONTOLOGIA"],
+    "NUTRICIÓN": ["NUTRICIONISTA"],
+    "PSICOLOGÍA": ["PSICOLOGO"],
+    "PSICOPEDAGOGÍA": [],
+    "PSIQUIATRÍA PEDIATRICA Y DE LA ADOLESCENCIA": [],
+    "QUÍMICA Y FARMACIA": ["FARMACEUTICOS"],
+    "TERAPIA OCUPACIONAL": ["TERAPEUTAS OCUPACIONALES"],
+    "TRABAJO SOCIAL": ["ASISTENTE SOCIAL"],
+}
+
 
 def obtener_distribucion_consultas(df, agrupacion):
     # Agrupa segun lo especificado por el usuario y separa por pacientes
@@ -86,6 +98,33 @@ def leer_consultas_medicas(ruta):
     # Consolida especialidades para que conversen con la cartera de servicios
     df["especialidad_agrupada"] = df["unidada_ate_desc"]
     for nueva_glosa, glosas_antiguas in REEMPLAZOS_ESPECIALIDADES_MEDICAS.items():
+        df["especialidad_agrupada"] = df["especialidad_agrupada"].replace(
+            glosas_antiguas, nueva_glosa
+        )
+
+    return df
+
+
+def leer_consultas_no_medicas(ruta):
+    # Lee la base de ambulatorio
+    df = pd.read_csv(ruta, dtype={"id_paciente": str})
+
+    # Formatea la fecha de cita a datetime
+    df["fecha_atencion"] = pd.to_datetime(df["fecha_atencion"], format="%Y-%m-%d")
+
+    # Deja solamente las consultas o controles
+    mask_consultas = (df["cobertura"].str.contains("CONSULTA")) | (
+        df["cobertura"].str.contains("CONTROL")
+    )
+    df = df[mask_consultas].copy()
+
+    # Deja solamente las consultas con asistencia
+    glosas_asistencia = ["ASISTENTE", "ASISTENTE S/RCE"]
+    df = df.query("estado.isin(@glosas_asistencia)").copy()
+
+    # Consolida especialidades para que conversen con la cartera de servicios
+    df["especialidad_agrupada"] = df["tipo_de_profesional"]
+    for nueva_glosa, glosas_antiguas in REEMPLAZOS_ESPECIALIDADES_NO_MEDICAS.items():
         df["especialidad_agrupada"] = df["especialidad_agrupada"].replace(
             glosas_antiguas, nueva_glosa
         )
