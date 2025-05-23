@@ -1,5 +1,46 @@
 import pandas as pd
 
+REEMPLAZOS_ESPECIALIDADES_MEDICAS = {
+    "ANESTESIOLOGÍA": ["ANESTESIOLOGIA INFANTIL"],
+    "CARDIOLOGÍA": ["CARDIOLOGIA INFANTIL"],
+    "CIRUGÍA CARDIOVASCULAR": [],
+    "CIRUGÍA PEDIÁTRICA": [
+        "CIRUGIA INFANTIL",
+    ],
+    "CIRUGÍA PLÁSTICA Y REPARADORA": ["CIRUGIA PLASTICA"],
+    "CIRUGÍA VASCULAR PERIFÉRICA": [],
+    "CIRUGÍA Y TRAUMATOLOGÍA BUCO MAXILOFACIAL": ["MAXILFACIAL", "MAXILOFACIAL"],
+    "DERMATOLOGÍA": ["DERMATOLOGIA INFANTIL"],
+    "ENDOCRINOLOGÍA PEDIÁTRICA": ["ENDOCRINOLOGIA INFANTIL", "ENDOCRINOLOGIA"],
+    "ENFERMEDADES RESPIRATORIA PEDIÁTRICAS": [
+        "BRONCOPULMONAR INFANTIL",
+    ],
+    "GASTROENTEROLOGÍA PEDIÁTRICA": ["GASTROENTEROLOGIA INFANTIL"],
+    "GENÉTICA CLÍNICA": ["GENETICA INFANTIL"],
+    "GINECOLOGÍA PEDIÁTRICA Y DE LA ADOLESCENCIA": [
+        "GINECOLOGIA INFANTIL",
+        "GINECOLOGIA PEDIATRICA Y DE LA ADOLESCENCIA",
+    ],
+    "HEMATOLOGÍA": [
+        "HEMATO-ONCOLOGIA",
+        "HEMOFILIA",
+        "HEMATOLOGIA INFANTIL",
+        "HEMATOLOGIA ADULTO",
+        "HEMOFILIA ADULTO",
+    ],
+    "INFECTOLOGÍA": ["INFECTOLOGIA INFANTIL"],
+    "INMUNOLOGÍA": ["INMUNOLOGIA"],
+    "NEFROLOGÍA PEDIÁTRICA": ["NEFROLOGIA INFANTIL"],
+    "NEUROCIRUGÍA": ["NEUROCIRUGIA INFANTIL"],
+    "NEUROLOGÍA PEDIATRICA": ["NEUROLOGIA INFANTIL"],
+    "OFTALMOLOGÍA": ["OFTALMOLOGIA"],
+    "OTORRINOLARINGOLOGÍA": ["OTORRINOLARINGOLOGIA"],
+    "PEDIATRÍA": ["PEDIATRIA"],
+    "REUMATOLOGÍA": ["REUMATOLOGIA"],
+    "TRAUMATOLOGÍA Y ORTOPEDIA": ["TRAUMATOLOGIA INFANTIL"],
+    "UROLOGÍA": ["UROLOGIA INFANTIL"],
+}
+
 
 def obtener_distribucion_consultas(df, agrupacion):
     # Agrupa segun lo especificado por el usuario y separa por pacientes
@@ -21,8 +62,8 @@ def obtener_distribucion_consultas(df, agrupacion):
     distribucion_consultas = distribucion_consultas.join(cantidad_consultas)
 
     # Periodo minimo
-    anio_minimo = df["fechacita"].dt.year.min()
-    anio_maximo = df["fechacita"].dt.year.max()
+    anio_minimo = df["fecha_atencion"].dt.year.min()
+    anio_maximo = df["fecha_atencion"].dt.year.max()
 
     # Agrega indicadores de anio del resumen
     distribucion_consultas.columns = (
@@ -32,55 +73,24 @@ def obtener_distribucion_consultas(df, agrupacion):
     return distribucion_consultas, consultas_por_paciente
 
 
-def leer_y_filtrar_consultas_medicas_y_no_medicas(ruta_track):
-    # Lee track
-    df_track = pd.read_csv(ruta_track)
-
-    # Formatea el id del paciente
-    df_track["id_paciente"] = df_track["id_paciente"].astype(str).str.strip(".0")
+def leer_consultas_medicas(ruta):
+    # Lee la base de ambulatorio
+    df = pd.read_csv(ruta, dtype={"id_paciente": str})
 
     # Formatea la fecha de cita a datetime
-    df_track["fechacita"] = pd.to_datetime(df_track["fechacita"], format="%Y-%m-%d")
+    df["fecha_atencion"] = pd.to_datetime(df["fecha_atencion"], format="%Y-%m-%d")
 
-    # Define las glosas solamente de consultas (filtra procedimientos y miscaleneos) y medicos
-    GLOSAS_CONSULTAS = ["Consulta Repetida", "Consulta Nueva"]
-    PROFESIONALES_MEDICOS = ["Médico Cirujano", "Médico", "Psiquiatra"]
+    # Todas las consultas salen que asistieron, por lo que es innecesario filtrar. Ademas
+    # todas las consultas son de profeisonales medicos
 
-    # Llena las especialidades sin imputar
-    df_track["especialidad_agrupada"] = df_track["especialidad_agrupada"].fillna(
-        "Especialidad no ingresada"
-    )
+    # Consolida especialidades para que conversen con la cartera de servicios
+    df["especialidad_agrupada"] = df["unidada_ate_desc"]
+    for nueva_glosa, glosas_antiguas in REEMPLAZOS_ESPECIALIDADES_MEDICAS.items():
+        df["especialidad_agrupada"] = df["especialidad_agrupada"].replace(
+            glosas_antiguas, nueva_glosa
+        )
 
-    # Convierte las prestaciones a mayuscula
-    df_track["prestacion"] = df_track["prestacion"].str.upper().str.strip()
-
-    # Reasigna profesionales
-    df_track["tipoprofesional_reasignado"] = df_track["tipoprofesional"].replace(
-        {
-            "Kinesiólogo (a)": "MEDICINA FÍSICA Y REHABILITACIÓN",
-            "Fonoaudiólogo (a)": "FONOAUDIOLOGO",
-            "Psicólogo (a)": "PSICOLOGÍA",
-            "Asistente Social     ": "TRABAJO SOCIAL",
-        }
-    )
-
-    # Filtra solamente las consultas validas (Atendidas, Consulta Nueva/Repetida y que
-    # tenga Consulta en el nombre)
-    consultas_validas = df_track.query(
-        "estadocita == 'Atendido' and tipoatencion.isin(@GLOSAS_CONSULTAS)"
-    )
-    # consultas_validas = consultas_validas.query("prestacion.str.contains('CONSULTA')")
-
-    # Filtra por consultas medicas y profesionales medicas
-    mask_medicas = (consultas_validas["tipoprofesional"].isin(PROFESIONALES_MEDICOS)) & (
-        consultas_validas["prestacion"].str.contains("CONSULTA")
-    )
-    mask_no_medicas = ~consultas_validas["tipoprofesional"].isin(PROFESIONALES_MEDICOS)
-
-    consultas_medicas = consultas_validas[mask_medicas]
-    consultas_no_medicas = consultas_validas[mask_no_medicas]
-
-    return df_track, consultas_medicas, consultas_no_medicas
+    return df
 
 
 def calcular_casos_por_especialidad(df, casos_totales, anios_poblacion):
