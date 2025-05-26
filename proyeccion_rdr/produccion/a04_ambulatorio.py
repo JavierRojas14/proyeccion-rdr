@@ -285,9 +285,11 @@ def corregir_casos_duplicados_por_especialidad(
         claves + [columna_orden], ascending=[True] * len(claves) + [False]
     )
     df_duplicados = identificar_duplicados(df_ordenado, claves)
-    df_sin_superposicion = eliminar_casos_duplicados(df_duplicados, claves, columnas_valores)
 
-    df_ordenado.loc[df_sin_superposicion.index, columnas_valores] = df_sin_superposicion
+    if not df_duplicados.empty:
+        df_sin_superposicion = eliminar_casos_duplicados(df_duplicados, claves, columnas_valores)
+        df_ordenado.loc[df_sin_superposicion.index, columnas_valores] = df_sin_superposicion
+
     return df_ordenado
 
 
