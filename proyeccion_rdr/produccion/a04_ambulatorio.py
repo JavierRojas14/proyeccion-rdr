@@ -309,6 +309,19 @@ def calcular_casos_a_hacerse_cargo(df, porcentaje_col, columnas_suma):
     return df_copia.reset_index()
 
 
+def hacer_control_de_casos(df_casos_long):
+    print("Controlando las trazadoras ingresadas...")
+    trazadoras_sin_casos = df_casos_long[df_casos_long["2035"].isna()]
+    trazadoras_sin_casos = trazadoras_sin_casos.reset_index().sort_values(["Diagnostico"])
+    if not trazadoras_sin_casos.empty:
+        print("Hay un error con las trazadoras ingresadas:")
+        display(trazadoras_sin_casos)
+        raise ValueError("Existen trazadoras sin casos asociados. Por favor, revisa los datos.")
+
+    else:
+        print("Todas las trazadoras tienen casos asociados. No se requiere control adicional.")
+
+
 # Flujo principal
 def procesar_incidencias(
     ruta_incidencias, tipo_consulta, casos_macroproceso_por_region, anios_poblacion
@@ -333,6 +346,9 @@ def procesar_incidencias(
     casos_por_especialidad_long = unir_casos_con_macroprocesos(
         casos_por_especialidad_long, casos_macroproceso_por_region
     )
+
+    # Identifica todas las trazadoras que NO tienen casos
+    hacer_control_de_casos(casos_por_especialidad_long)
 
     # Corrige (elimina) los casos duplicados de una especialidad
     agrupacion_para_sacar_duplicados = ["ESTAMENTO/ESPECIALIDAD", "Diagnostico", "Estrato"]
