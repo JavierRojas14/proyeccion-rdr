@@ -461,7 +461,7 @@ if __name__ == "__main__":
         "hasta_3": "EDAD_TRAMO == 0",  # Hasta 3 anios (0, 1 y 2 anios)
         "entre_10_y_18": "EDAD_TRAMO == 0",  # Entre 10 y 18
         "hasta_10": "EDAD_TRAMO == 0",  # Hasta los 10
-        "entre_0_y_15": "EDAD_TRAMO == 0",
+        "entre_0_y_15": "EDAD_TRAMO < 15",
     }
 
     # Procesar datos
