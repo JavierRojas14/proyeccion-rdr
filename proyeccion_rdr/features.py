@@ -182,6 +182,29 @@ def calcular_horas_laborales(
     return horas_por_anio
 
 
+def leer_proyeccion_consultas_medicas_especialidad(ruta, anios_a_sumar):
+    # Lee la cantidad de consultas medicas proyectadas
+    df = pd.read_excel(ruta, sheet_name="consultas_medicas_proyectadas")
+
+    # Renombra nombre de columna especialidades
+    df = df.rename(columns={"Unnamed: 0": "ESTAMENTO/ESPECIALIDAD"})
+
+    # Rellena las celdas de especialidad sin rellenar
+    df["ESTAMENTO/ESPECIALIDAD"] = df["ESTAMENTO/ESPECIALIDAD"].ffill()
+
+    # Pone la especialidad como indice y suma las consultas de todas las especialidades
+    df = df.groupby("ESTAMENTO/ESPECIALIDAD")[anios_a_sumar].sum().sum()
+
+    return df
+
+
+def leer_dco_proyectados(ruta, anios_a_sumar):
+    egresos_dco = pd.read_excel(ruta, sheet_name="dias_estada_estimados_RDR")
+    egresos_dco = egresos_dco[anios_a_sumar].sum()
+
+    return egresos_dco
+
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
