@@ -53,6 +53,68 @@ def leer_farmacia(ruta):
     return df, df_hosp, df_amb
 
 
+def unir_atenciones_con_examenes(atenciones, examenes):
+    """
+    Une los datos de exámenes con los datos de días de estancia por paciente. Deja las atenciones
+    como el total que se debe dejar
+    """
+    return atenciones.to_frame().join(examenes, how="left")
+
+
+def calcular_ratio_examenes(df, columna_examenes, columna_atenciones):
+    """
+    Calcula la proporción de exámenes por día de estancia.
+    """
+    df["ratio_examenes"] = df[columna_examenes] / df[columna_atenciones]
+    return df
+
+
+def describir_por_ano(df):
+    """
+    Agrupa los datos por año y genera estadísticas descriptivas del ratio de exámenes.
+    """
+    return df.groupby("ano")["ratio_examenes"].describe()
+
+
+def calcular_examenes_por_atencion(
+    atenciones_totales_por_paciente,
+    examenes_por_paciente,
+    columna_atenciones,
+    columna_examenes,
+):
+    """
+    Calcula el desempeño de algun servicio, incluyendo estadísticas descriptivas
+    del ratio de exámenes (incluso prescripciones) por algun tipo de atencion (DCO o consultas).
+    """
+    # Paso 1: Unir las atenciones totales con los pacientes con examenes
+    datos_unidos = unir_atenciones_con_examenes(
+        atenciones_totales_por_paciente, examenes_por_paciente
+    )
+
+    # Paso 2: Rellena pacientes que nunca se han visto en el servicio
+    datos_unidos = datos_unidos.fillna(0)
+
+    # Paso 3: Calcular ratio de exámenes por día de estancia
+    datos_ratio = calcular_ratio_examenes(datos_unidos, columna_examenes, columna_atenciones)
+
+    # Paso 4: Generar estadísticas descriptivas por año
+    resumen = describir_por_ano(datos_ratio)
+
+    # Paso 5: Obtiene la cantidad de pacientes distintos en la base de examenes
+    pacientes_unicos_examenes = (
+        examenes_por_paciente.reset_index().groupby("ano")["id_paciente"].nunique()
+    )
+
+    # Paso 6: Une los pacientes con examenes al resumen
+    resumen = resumen.join(pacientes_unicos_examenes)
+    resumen = resumen[["count", "id_paciente", "mean", "std", "min", "25%", "50%", "75%", "max"]]
+
+    # Paso 7: Elimina los anios sin registro
+    resumen = resumen.dropna()
+
+    return datos_ratio, resumen
+
+
 def guardar_dict_en_excel(
     nombre_archivo,
     datos_por_hoja,
