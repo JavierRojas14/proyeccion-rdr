@@ -10,6 +10,21 @@ def leer_cae(ruta):
 
 def leer_grd(ruta):
     df = pd.read_csv(ruta, dtype={"id_paciente": str})
+
+    # Formatea las fechas de ingreso y egreso
+    df["fecha_ingreso"] = pd.to_datetime(df["fecha_ingreso"], format="%Y-%m-%d")
+    df["fecha_egreso"] = pd.to_datetime(df["fecha_egreso"], format="%Y-%m-%d")
+
+    # Obtiene la estancia
+    df["estancia"] = (df["fecha_egreso"] - df["fecha_ingreso"]).dt.days
+
+    # Corrige estancias de 0 dias
+    mask_estancia_cero = df["estancia"] == 0
+    df.loc[mask_estancia_cero, "estancia"] += 1
+
+    # Obtiene solamente los egresos hosp. Notar que la base ya llegaba solo con egresos hosp
+    df = df.query("tipo_actividad == 1").copy()
+
     return df
 
 
@@ -25,7 +40,7 @@ def leer_laboratorio(ruta):
 
 
 def leer_farmacia(ruta):
-    # Lee la base de datos de laboratorio
+    # Lee la base de datos de farmacia
     df = pl.read_csv(ruta, dtypes={"id_paciente": str}).to_pandas()
 
     # Cambia los examenes del tipo externos a ambulatorios
