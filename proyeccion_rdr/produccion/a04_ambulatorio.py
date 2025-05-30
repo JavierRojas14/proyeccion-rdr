@@ -95,6 +95,9 @@ def leer_consultas_medicas(ruta):
     # Todas las consultas salen que asistieron, por lo que es innecesario filtrar. Ademas
     # todas las consultas son de profeisonales medicos
 
+    # Renombra columnas
+    df = df.rename(columns={"ano_ate": "ano"})
+
     # Consolida especialidades para que conversen con la cartera de servicios
     df["especialidad_agrupada"] = df["unidada_ate_desc"]
     for nueva_glosa, glosas_antiguas in REEMPLAZOS_ESPECIALIDADES_MEDICAS.items():
