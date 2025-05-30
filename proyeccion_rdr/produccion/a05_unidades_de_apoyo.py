@@ -22,6 +22,9 @@ def leer_grd(ruta):
     mask_estancia_cero = df["estancia"] == 0
     df.loc[mask_estancia_cero, "estancia"] += 1
 
+    # Renombra columnas
+    df = df.rename(columns={"fecha_egreso_ano": "ano"})
+
     # Obtiene solamente los egresos hosp. Notar que la base ya llegaba solo con egresos hosp
     df = df.query("tipo_actividad == 1").copy()
 
