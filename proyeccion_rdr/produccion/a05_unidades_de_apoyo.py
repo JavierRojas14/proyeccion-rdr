@@ -1,4 +1,5 @@
 import pandas as pd
+import polars as pl
 import xlsxwriter.utility as xl_util
 
 
@@ -10,6 +11,28 @@ def leer_cae(ruta):
 def leer_grd(ruta):
     df = pd.read_csv(ruta, dtype={"id_paciente": str})
     return df
+
+
+def leer_laboratorio(ruta):
+    # Lee la base de datos de laboratorio
+    df = pl.read_csv(ruta, dtypes={"n": pl.Float64, "id_paciente": str}).to_pandas()
+
+    # Cambia los examenes del tipo externos a ambulatorios
+    df_hosp = df.query("tipo_examen == 'AC'")
+    df_amb = df.query("tipo_examen == 'AA'")
+
+    return df, df_hosp, df_amb
+
+
+def leer_farmacia(ruta):
+    # Lee la base de datos de laboratorio
+    df = pl.read_csv(ruta, dtypes={"id_paciente": str}).to_pandas()
+
+    # Cambia los examenes del tipo externos a ambulatorios
+    df_hosp = df.query("tipopac_2 == 'HOSP'")
+    df_amb = df.query("tipopac_2 == 'AMB'")
+
+    return df, df_hosp, df_amb
 
 
 def guardar_dict_en_excel(
