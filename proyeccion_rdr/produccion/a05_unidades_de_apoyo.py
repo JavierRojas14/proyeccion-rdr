@@ -53,6 +53,21 @@ def leer_farmacia(ruta):
     return df, df_hosp, df_amb
 
 
+def leer_imagenologia(ruta):
+    # Lee la base de datos de imagenologia
+    df = pl.read_csv(ruta, dtypes={"id_paciente": str}).to_pandas()
+
+    # Renombra las columnas
+    df = df.rename(columns={"nombre_prestacion": "glosa_examen"})
+
+    # Separa en paciente hosp, ambulatorio y urgencia
+    df_hosp = df.query("tipo_paciente == 'HOSPITALIZADO'")
+    df_amb = df.query("tipo_paciente == 'AMBULATORIO'")
+    df_urg = df.query("tipo_paciente == 'URGENCIA'")
+
+    return df, df_hosp, df_amb, df_urg
+
+
 def unir_atenciones_con_examenes(atenciones, examenes):
     """
     Une los datos de exámenes con los datos de días de estancia por paciente. Deja las atenciones
