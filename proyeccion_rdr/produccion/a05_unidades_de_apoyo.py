@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import polars as pl
 import xlsxwriter.utility as xl_util
@@ -341,6 +342,51 @@ def estimar_unidad_completa(
         "Producción Total de Unidad": produccion_actual_unidad.reset_index(),
         "Crecimiento de la Unidad": crecimiento_unidad,
     }
+
+
+def obtener_pacientes_unicos_por_ano(df, columna_ano, columna_id_paciente):
+    return df.groupby(columna_ano)[columna_id_paciente].unique()
+
+
+def comparar_pacientes(df1, df2, columna_ano="ano", columna_id_paciente="id_paciente"):
+    pacientes_unicos_df1 = obtener_pacientes_unicos_por_ano(df1, columna_ano, columna_id_paciente)
+    pacientes_unicos_df2 = obtener_pacientes_unicos_por_ano(df2, columna_ano, columna_id_paciente)
+
+    # Indica los anios donde se superponen ambas bases de datos
+    anos_superpuestos = set(pacientes_unicos_df1.index).intersection(pacientes_unicos_df2.index)
+    if anos_superpuestos == set():
+        print("No hay anios que se superpongan")
+        resultados = pd.DataFrame({"ano": [0000], "porcentaje_df2_en_df1": [np.nan]})
+        return resultados
+
+    resultados = []
+    for ano in anos_superpuestos:
+        pacientes_df1 = set(pacientes_unicos_df1[ano])
+        pacientes_df2 = set(pacientes_unicos_df2[ano])
+
+        solo_en_df1 = pacientes_df1 - pacientes_df2
+        solo_en_df2 = pacientes_df2 - pacientes_df1
+        interseccion = pacientes_df1 & pacientes_df2
+
+        porcentaje_df2_en_df1 = (
+            (len(interseccion) / len(pacientes_df1)) if len(pacientes_df1) > 0 else 0
+        )
+
+        resultados.append(
+            {
+                "ano": ano,
+                # "solo_en_df1": solo_en_df1,
+                # "solo_en_df2": solo_en_df2,
+                # "interseccion": interseccion,
+                "porcentaje_df2_en_df1": porcentaje_df2_en_df1,
+            }
+        )
+
+    if len(resultados) > 0:
+        resultados = pd.DataFrame(resultados)
+        resultados = resultados.sort_values("ano")
+
+    return resultados
 
 
 def obtener_metricas_para_proyectar_unidad(
