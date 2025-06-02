@@ -205,6 +205,23 @@ def leer_dco_proyectados(ruta, anios_a_sumar):
     return egresos_dco
 
 
+def leer_consultas_urgencia_proyectadas(ruta):
+    consultas_urgencia_proyectadas = pd.read_excel(ruta)
+    fila_consultas_proyectadas = (
+        (consultas_urgencia_proyectadas == "consultas_urgencia_proyectadas").any(axis=1).idxmax()
+    ) + 1
+    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.iloc[
+        fila_consultas_proyectadas:
+    ]
+    consultas_urgencia_proyectadas.columns = consultas_urgencia_proyectadas.iloc[0]
+    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.iloc[1:]
+    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.set_index("index")[
+        "Total Consultas Urgencia Proyectadas"
+    ]
+
+    return consultas_urgencia_proyectadas
+
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
