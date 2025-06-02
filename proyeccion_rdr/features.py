@@ -215,11 +215,14 @@ def leer_consultas_urgencia_proyectadas(ruta):
     ]
     consultas_urgencia_proyectadas.columns = consultas_urgencia_proyectadas.iloc[0]
     consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.iloc[1:]
-    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.set_index("index")[
-        "Total Consultas Urgencia Proyectadas"
-    ]
+    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.set_index("index")
 
-    return consultas_urgencia_proyectadas
+    # Aisla solamente las consultas C
+    consultas_c1_c2_c3 = consultas_urgencia_proyectadas[["C1", "C2", "C3"]].sum(axis=1)
+    consultas_c4_c5 = consultas_urgencia_proyectadas[["C4", "C5"]].sum(axis=1)
+    consultas_totales = consultas_urgencia_proyectadas["Total Consultas Urgencia Proyectadas"]
+
+    return consultas_c1_c2_c3, consultas_c4_c5, consultas_totales
 
 
 @app.command()
