@@ -40,6 +40,15 @@ def leer_grd(ruta):
     return df
 
 
+def leer_urgencias(ruta):
+    # Lee la base de urgencias
+    df = pl.read_csv(
+        ruta, dtypes={"id_paciente": str, "telefono": str, "rut": str, "cp": str, "ley_social": str}
+    ).to_pandas()
+
+    return df
+
+
 def leer_laboratorio(ruta):
     # Lee la base de datos de laboratorio
     df = pl.read_csv(ruta, dtypes={"n": pl.Float64, "id_paciente": str}).to_pandas()
