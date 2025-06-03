@@ -206,23 +206,19 @@ def leer_dco_proyectados(ruta, anios_a_sumar):
 
 
 def leer_consultas_urgencia_proyectadas(ruta):
-    consultas_urgencia_proyectadas = pd.read_excel(ruta)
-    fila_consultas_proyectadas = (
-        (consultas_urgencia_proyectadas == "consultas_urgencia_proyectadas").any(axis=1).idxmax()
-    ) + 1
-    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.iloc[
-        fila_consultas_proyectadas:
-    ]
-    consultas_urgencia_proyectadas.columns = consultas_urgencia_proyectadas.iloc[0]
-    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.iloc[1:]
-    consultas_urgencia_proyectadas = consultas_urgencia_proyectadas.set_index("index")
+    # Lee la base de urgencias
+    df = (
+        pd.read_excel(ruta, sheet_name="proyeccion_consultas")
+        .rename(columns={"Unnamed: 0": "tipo_consulta"})
+        .set_index(["tipo_consulta"])
+    )
 
     # Aisla solamente las consultas C
-    consultas_c1_c2_c3 = consultas_urgencia_proyectadas[["C1", "C2", "C3"]].sum(axis=1)
-    consultas_c4_c5 = consultas_urgencia_proyectadas[["C4", "C5"]].sum(axis=1)
-    consultas_totales = consultas_urgencia_proyectadas["Total Consultas Urgencia Proyectadas"]
+    consultas_c1_a_c3 = df.query("tipo_consulta.isin(['C1', 'C2', 'C3'])").sum()
+    consultas_c4_y_c5 = df.query("tipo_consulta.isin(['C4', 'C5'])").sum()
+    total_consultas = df.query("tipo_consulta == 'Total'").sum()
 
-    return consultas_c1_c2_c3, consultas_c4_c5, consultas_totales
+    return consultas_c1_a_c3, consultas_c4_y_c5, total_consultas
 
 
 @app.command()
