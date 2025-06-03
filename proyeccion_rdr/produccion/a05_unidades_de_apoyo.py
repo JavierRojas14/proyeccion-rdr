@@ -4,6 +4,14 @@ import polars as pl
 import xlsxwriter.utility as xl_util
 
 
+def leer_casos_urgencia(ruta):
+    # Lee los casos de urgencia
+    df = pd.read_excel(ruta, sheet_name="pacientes_con_urgencia").set_index("Unnamed: 0")
+
+    # Obtiene el resumen de casos
+    return df.sum()
+
+
 def leer_cae(ruta):
     df = pd.read_csv(ruta, dtype={"id_paciente": str})
     return df
