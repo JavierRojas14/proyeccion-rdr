@@ -285,8 +285,10 @@ def estimar_unidad_completa(
     df_unidad,
     df_unidad_hosp,
     df_unidad_amb,
+    df_unidad_urg,
     df_grd,
     df_consultas,
+    df_urgencias,
     casos_hospitalizados_proyectados,
     casos_atencion_abierta_proyectados,
     anios_poblacion,
@@ -304,8 +306,10 @@ def estimar_unidad_completa(
         df_unidad,
         df_unidad_hosp,
         df_unidad_amb,
+        df_unidad_urg,
         df_grd,
         df_consultas,
+        df_urgencias,
         estimar_examenes_por_paciente_utilizando_glosa,
         modificaciones_a_metricas_para_proyectar,
         valor_estadistico_a_ocupar,
@@ -410,15 +414,17 @@ def obtener_metricas_para_proyectar_unidad(
     df_unidad,
     df_unidad_hosp,
     df_unidad_amb,
+    df_unidad_urg,
     df_grd,
     df_consultas,
+    df_urgencias,
     estimar_examenes_por_paciente_utilizando_glosa=True,
     modificaciones_a_metricas_para_proyectar=None,
     valor_estadistico_a_ocupar="75%",
 ):
     # 1. Obtiene el porcentaje de realizacion de cada uno de los examenes de la unidad
     porcentajes_examenes = calcular_porcentaje_examenes(
-        df_unidad, df_unidad_hosp, df_unidad_amb, df_grd, df_consultas
+        df_unidad, df_unidad_hosp, df_unidad_amb, df_unidad_urg, df_grd, df_consultas, df_urgencias
     )
 
     # 2. Obtiene cuantos examenes se realiza cada paciente por examen de la unidad
@@ -456,8 +462,10 @@ def calcular_porcentaje_examenes(
     df_unidad,
     df_unidad_hosp,
     df_unidad_amb,
+    df_unidad_urg,
     df_grd,
     consultas_medicas,
+    df_urgencias,
 ):
     """
     Calcula el porcentaje de pacientes que se realizan cada examen, separando por hospitalizados y
@@ -467,8 +475,10 @@ def calcular_porcentaje_examenes(
     - df_unidad: DataFrame con los exámenes.
     - df_unidad_hosp: DataFrame con exámenes en hospitalizados.
     - df_unidad_amb: DataFrame con exámenes en ambulatorios.
+    - df_unidad_urg: DataFrame con exámenes en urgencias.
     - df_grd: DataFrame de pacientes hospitalizados.
     - consultas_medicas: DataFrame de consultas médicas ambulatorias.
+    - df_urgencias: DataFrame de consultas de urgencia.
 
     Retorna:
     - Una lista con los DataFrames de porcentajes de exámenes.
@@ -477,15 +487,20 @@ def calcular_porcentaje_examenes(
 
     # Itera en todos los tipos de examenes de la unidad
     for tipo_examen in df_unidad["glosa_examen"].unique():
-        porcentaje_examen_hosp, porcentaje_examen_amb = obtener_porcentajes_de_un_examen(
-            tipo_examen,
-            df_unidad_hosp,
-            df_unidad_amb,
-            df_grd,
-            consultas_medicas,
+        porcentaje_examen_hosp, porcentaje_examen_amb, porcentaje_examen_urg = (
+            obtener_porcentajes_de_un_examen(
+                tipo_examen,
+                df_unidad_hosp,
+                df_unidad_amb,
+                df_unidad_urg,
+                df_grd,
+                consultas_medicas,
+                df_urgencias,
+            )
         )
         resultados_examenes.append(porcentaje_examen_hosp)
         resultados_examenes.append(porcentaje_examen_amb)
+        resultados_examenes.append(porcentaje_examen_urg)
 
     # Convierte el resumen de examenes a formato necesario
     resultados_examenes = pd.concat(resultados_examenes)
@@ -500,7 +515,13 @@ def calcular_porcentaje_examenes(
 
 
 def obtener_porcentajes_de_un_examen(
-    tipo_examen, df_unidad_hosp, df_unidad_amb, df_grd, consultas_medicas
+    tipo_examen,
+    df_unidad_hosp,
+    df_unidad_amb,
+    df_unidad_urg,
+    df_grd,
+    consultas_medicas,
+    df_urgencias,
 ):
     """
     Procesa un tipo de examen específico, calculando el porcentaje de pacientes en hospitalizados y
@@ -510,6 +531,7 @@ def obtener_porcentajes_de_un_examen(
     - tipo_examen: Nombre del examen.
     - df_unidad_hosp: DataFrame con exámenes en hospitalizados.
     - df_unidad_amb: DataFrame con exámenes en ambulatorios.
+    - df_unidad_urg: DataFrame con exámenes en urgencia.
     - df_grd: DataFrame de pacientes hospitalizados.
     - consultas_medicas: DataFrame de consultas médicas ambulatorias.
     - ua: Módulo con funciones de análisis.
@@ -519,9 +541,11 @@ def obtener_porcentajes_de_un_examen(
     """
     df_examen_hosp = df_unidad_hosp.query("glosa_examen == @tipo_examen")
     df_examen_amb = df_unidad_amb.query("glosa_examen == @tipo_examen")
+    df_examen_urg = df_unidad_urg.query("glosa_examen == @tipo_examen")
 
     porcentaje_hosp = comparar_pacientes(df_grd, df_examen_hosp)
     porcentaje_amb = comparar_pacientes(consultas_medicas, df_examen_amb)
+    porcentaje_urg = comparar_pacientes(df_urgencias, df_examen_urg)
 
     porcentaje_hosp["glosa_examen"] = tipo_examen
     porcentaje_hosp["procedencia"] = "HOSPITALIZADO"
@@ -529,7 +553,10 @@ def obtener_porcentajes_de_un_examen(
     porcentaje_amb["glosa_examen"] = tipo_examen
     porcentaje_amb["procedencia"] = "AMBULATORIO"
 
-    return [porcentaje_hosp, porcentaje_amb]
+    porcentaje_urg["glosa_examen"] = tipo_examen
+    porcentaje_urg["procedencia"] = "URGENCIA"
+
+    return [porcentaje_hosp, porcentaje_amb, porcentaje_urg]
 
 
 def calcular_examenes_por_pacientes_por_glosa(df):
