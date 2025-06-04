@@ -291,6 +291,7 @@ def estimar_unidad_completa(
     df_urgencias,
     casos_hospitalizados_proyectados,
     casos_atencion_abierta_proyectados,
+    casos_urgencia_proyectados,
     anios_poblacion,
     estimar_examenes_por_paciente_utilizando_glosa,
     modificaciones_a_metricas_para_proyectar=None,
@@ -320,6 +321,7 @@ def estimar_unidad_completa(
         metricas_para_proyectar,
         casos_hospitalizados_proyectados,
         casos_atencion_abierta_proyectados,
+        casos_urgencia_proyectados,
     )
 
     # 3. Obtiene la cantidad total de examenes proyectados
@@ -431,16 +433,19 @@ def obtener_metricas_para_proyectar_unidad(
     if estimar_examenes_por_paciente_utilizando_glosa:
         examenes_por_paciente_hosp = calcular_examenes_por_pacientes_por_glosa(df_unidad_hosp)
         examenes_por_paciente_amb = calcular_examenes_por_pacientes_por_glosa(df_unidad_amb)
+        examenes_por_paciente_urg = calcular_examenes_por_pacientes_por_glosa(df_unidad_urg)
 
     else:
         examenes_por_paciente_hosp = calcular_examenes_por_pacientes_por_cantidad(df_unidad_hosp)
         examenes_por_paciente_amb = calcular_examenes_por_pacientes_por_cantidad(df_unidad_amb)
+        examenes_por_paciente_urg = calcular_examenes_por_pacientes_por_cantidad(df_unidad_urg)
 
     # 3. Selecciona las metricas para proyectar cada uno de los examenes
     metricas_para_proyectar_unidad = seleccionar_metricas_unidad(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
         examenes_por_paciente_amb,
+        examenes_por_paciente_urg,
         valor_estadistico_a_ocupar,
     )
 
@@ -590,6 +595,7 @@ def seleccionar_metricas_unidad(
     porcentajes_unidad,
     desempeno_unidad_hosp,
     desempeno_unidad_amb,
+    desempeno_unidad_urg,
     valor_estadistico_a_ocupar="75%",
     seleccion_valor_en_anios="max",
 ):
@@ -600,6 +606,7 @@ def seleccionar_metricas_unidad(
     - porcentajes_unidad: DataFrame con los porcentajes de exámenes por tipo.
     - desempeno_unidad_hosp: DataFrame con el rendimiento de exámenes hospitalarios.
     - desempeno_unidad_amb: DataFrame con el rendimiento de exámenes ambulatorios.
+    - desempeno_unidad_urg: DataFrame con el rendimiento de exámenes de urgencia.
 
     Retorna:
     - DataFrame consolidado con métricas de porcentaje y cantidad de exámenes por paciente.
@@ -608,6 +615,7 @@ def seleccionar_metricas_unidad(
     porcentajes_a_utilizar = porcentajes_unidad.groupby(["glosa_examen"]).agg(
         porcentaje_a_realizar_hosp=("HOSPITALIZADO", seleccion_valor_en_anios),
         porcentaje_a_realizar_amb=("AMBULATORIO", seleccion_valor_en_anios),
+        porcentaje_a_realizar_urg=("URGENCIA", seleccion_valor_en_anios),
     )
 
     # Selecciona cuantos examenes a realizar por paciente hospitalizado
@@ -620,12 +628,18 @@ def seleccionar_metricas_unidad(
         examenes_por_paciente_amb=(valor_estadistico_a_ocupar, seleccion_valor_en_anios)
     )
 
+    # Selecciona cuantos examenes a realizar por paciente de urgencia
+    cantidad_examenes_urg = desempeno_unidad_urg.groupby(["glosa_examen"]).agg(
+        examenes_por_paciente_urg=(valor_estadistico_a_ocupar, seleccion_valor_en_anios)
+    )
+
     # Consolida que porcentaje de pacientes necesitara el examen y cuantos examenes a realizar
     metricas_unidad = pd.concat(
         [
             porcentajes_a_utilizar,
             cantidad_examenes_hosp,
             cantidad_examenes_amb,
+            cantidad_examenes_urg,
         ],
         axis=1,
     )
@@ -676,6 +690,7 @@ def proyectar_examenes_unidad(
     metricas_para_proyectar,
     casos_hospitalizados_proyectados,
     casos_ambulatorios_proyectados,
+    casos_urgencia_proyectados,
 ):
     """
     Proyecta la cantidad de exámenes de una unidad según los casos y métricas proporcionadas.
@@ -686,8 +701,10 @@ def proyectar_examenes_unidad(
         nombre_examen,
         porcentaje_hosp,
         porcentaje_amb,
+        porcentaje_urg,
         examenes_por_paciente_hosp,
         examenes_por_paciente_amb,
+        examenes_por_paciente_urg,
         _,
     ) in metricas_para_proyectar.itertuples():
         # Calcula los examenes a realizar en hospitalizados
@@ -708,9 +725,19 @@ def proyectar_examenes_unidad(
             "AMBULATORIO",
         )
 
+        # Calcula los examenes a realizar en urgencia
+        examenes_proyectados_urg = calcular_examenes_proyectados(
+            casos_urgencia_proyectados,
+            porcentaje_urg,
+            examenes_por_paciente_urg,
+            nombre_examen,
+            "URGENCIA",
+        )
+
         # Agrega los resultados
         proyeccion_unidad.append(examenes_proyectados_hosp)
         proyeccion_unidad.append(examenes_proyectados_amb)
+        proyeccion_unidad.append(examenes_proyectados_urg)
 
     # Consolida los resultados de todos los examenes
     proyeccion_unidad = pd.concat(proyeccion_unidad)
