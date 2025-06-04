@@ -159,8 +159,8 @@ def guardar_dict_en_excel(
     Guarda un diccionario de diccionarios de DataFrames en un archivo Excel como tablas formateadas
     con títulos.
 
-    - Si hay 6 elementos en el diccionario interno:
-      - Los primeros 3 elementos se guardan en formato horizontal con un espacio de columnas.
+    - Si hay 7 elementos en el diccionario interno:
+      - Los primeros 4 elementos se guardan en formato horizontal con un espacio de columnas.
       - Los últimos 3 elementos se guardan en formato vertical con un espacio de filas.
     - Si hay solo 1 elemento, se guarda directamente en la hoja con su título y formato de tabla.
     - Se aplica formato de tabla de Excel usando XlsxWriter.
@@ -200,14 +200,14 @@ def guardar_dict_en_excel(
                         },
                     )
 
-            elif len(lista_items) == 6:
-                # Caso de 6 elementos
+            elif len(lista_items) == 7:
+                # Caso de 7 elementos
                 fila_inicio, columna_inicio = 0, 0
 
                 formato_cursiva = workbook.add_format({"italic": True})
 
-                # Guardar los primeros 3 elementos en formato horizontal
-                for i, (nombre_tabla, df) in enumerate(lista_items[:3]):
+                # Guardar los primeros 4 elementos en formato horizontal
+                for i, (nombre_tabla, df) in enumerate(lista_items[:4]):
                     worksheet.write(
                         fila_inicio, columna_inicio, nombre_tabla, formato_cursiva
                     )  # Insertar título en cursiva
@@ -246,7 +246,7 @@ def guardar_dict_en_excel(
                 columna_inicio = 0
 
                 # Guardar los últimos 3 elementos en formato vertical
-                for nombre_tabla, df in lista_items[3:]:
+                for nombre_tabla, df in lista_items[4:]:
                     worksheet.write(
                         fila_inicio, columna_inicio, nombre_tabla, formato_cursiva
                     )  # Insertar título en cursiva
@@ -361,6 +361,7 @@ def estimar_unidad_completa(
         "Porcentaje de Realización de Exámenes Históricos": porcentajes_examenes.reset_index(),
         "Exámenes por Paciente - AC": examenes_por_paciente_hosp.reset_index(),
         "Exámenes por Paciente - AA": examenes_por_paciente_amb.reset_index(),
+        "Exámenes por Paciente - URG": examenes_por_paciente_urg.reset_index(),
         "Métricas seleccionadas para proyectar": metricas_para_proyectar.reset_index(),
         "Proyección de Exámenes": proyeccion_por_examen.reset_index(),
         "Proyección de Exámenes Totales": proyeccion_total_unidad.reset_index(),
