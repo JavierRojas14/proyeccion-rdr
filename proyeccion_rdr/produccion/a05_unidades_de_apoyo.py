@@ -302,6 +302,7 @@ def estimar_unidad_completa(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
         examenes_por_paciente_amb,
+        examenes_por_paciente_urg,
         metricas_para_proyectar,
     ) = obtener_metricas_para_proyectar_unidad(
         df_unidad,
@@ -349,6 +350,7 @@ def estimar_unidad_completa(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
         examenes_por_paciente_amb,
+        examenes_por_paciente_urg,
         metricas_para_proyectar,
         proyeccion_total_unidad,
         produccion_actual_unidad,
@@ -459,6 +461,7 @@ def obtener_metricas_para_proyectar_unidad(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
         examenes_por_paciente_amb,
+        examenes_por_paciente_urg,
         metricas_para_proyectar_unidad,
     )
 
@@ -775,6 +778,7 @@ def imprimir_resultados_estimacion_unidad(
     porcentajes_examenes,
     examenes_por_paciente_hosp,
     examenes_por_paciente_amb,
+    examenes_por_paciente_urg,
     metricas_para_proyectar,
     proyeccion_total_unidad,
     produccion_actual_unidad,
@@ -786,6 +790,7 @@ def imprimir_resultados_estimacion_unidad(
     # # Muestra cuantos examenes se realiza cada paciente
     # display(examenes_por_paciente_hosp)
     # display(examenes_por_paciente_amb)
+    # display(examenes_por_paciente_urg)
 
     # Muestra el consolidado de porcentajes y examenes por paciente
     print("Metricas utilizadas para proyectar")
@@ -794,8 +799,10 @@ def imprimir_resultados_estimacion_unidad(
             {
                 "porcentaje_a_realizar_hosp": lambda x: "-" if pd.isna(x) else f"{x:.1%}",
                 "porcentaje_a_realizar_amb": lambda x: "-" if pd.isna(x) else f"{x:.1%}",
+                "porcentaje_a_realizar_urg": lambda x: "-" if pd.isna(x) else f"{x:.1%}",
                 "examenes_por_paciente_hosp": lambda x: "-" if pd.isna(x) else f"{x:.2f}",
                 "examenes_por_paciente_amb": lambda x: "-" if pd.isna(x) else f"{x:.2f}",
+                "examenes_por_paciente_urg": lambda x: "-" if pd.isna(x) else f"{x:.2f}",
             }
         )
     )
