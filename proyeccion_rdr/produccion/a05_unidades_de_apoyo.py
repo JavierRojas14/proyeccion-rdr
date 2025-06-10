@@ -591,9 +591,10 @@ def obtener_porcentajes_de_un_examen(
 
 def examenes_por_paciente_sin_produccion():
     # Si el input es vacio, entonces retorna un placeholder
-    columns = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+    columns = ["glosa_examen", "count", "mean", "std", "min", "25%", "50%", "75%", "max"]
     desempeno_placeholder = pd.DataFrame(columns=columns).astype(float)
-    desempeno_placeholder.loc["Sin produccion"] = 0
+    desempeno_placeholder.loc["0000000"] = 0
+    desempeno_placeholder = desempeno_placeholder.set_index("glosa_examen")
     return desempeno_placeholder
 
 
