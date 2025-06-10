@@ -461,8 +461,6 @@ def obtener_metricas_para_proyectar_unidad(
         examenes_por_paciente_urg = calcular_examenes_por_pacientes_por_cantidad(df_unidad_urg)
 
     # 3. Selecciona las metricas para proyectar cada uno de los examenes
-    print(examenes_por_paciente_urg)
-    print(examenes_por_paciente_hosp)
     metricas_para_proyectar_unidad = seleccionar_metricas_unidad(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
@@ -537,6 +535,7 @@ def calcular_porcentaje_examenes(
         values="porcentaje_df2_en_df1",
         columns="procedencia",
         index=["glosa_examen", "ano"],
+        dropna=False,
     )
 
     return resultados_examenes
