@@ -95,6 +95,9 @@ def leer_anatomia(ruta):
     # Renombra columnas
     df = df.rename(columns={"codigo": "glosa_examen", "codigocantidad": "cantidad"})
 
+    # Elimina registros sin glosa de examen
+    df = df.dropna(subset="glosa_examen")
+
     # Separa en pacientes hosp, ambulatorio y urgencia
     df_hosp = df.query("condicion == 'HOSPITALIZADO'")
     df_amb = df.query("condicion == 'AMBULATORIO'")
