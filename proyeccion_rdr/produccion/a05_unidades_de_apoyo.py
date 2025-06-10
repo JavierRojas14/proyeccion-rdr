@@ -461,6 +461,8 @@ def obtener_metricas_para_proyectar_unidad(
         examenes_por_paciente_urg = calcular_examenes_por_pacientes_por_cantidad(df_unidad_urg)
 
     # 3. Selecciona las metricas para proyectar cada uno de los examenes
+    print(examenes_por_paciente_urg)
+    print(examenes_por_paciente_hosp)
     metricas_para_proyectar_unidad = seleccionar_metricas_unidad(
         porcentajes_examenes,
         examenes_por_paciente_hosp,
@@ -588,6 +590,14 @@ def obtener_porcentajes_de_un_examen(
 def calcular_examenes_por_pacientes_por_glosa(df):
     """Calcula los examenes por paciente para las prestaciones de una unidad. En este caso,
     se cuentan las glosas de examenes como 1 cantidad de examen"""
+
+    # if df.empty:
+    #     # Si el input es vacio, entonces retorna un placeholder
+    #     columns = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+    #     desempeno_placeholder = pd.DataFrame(columns=columns).astype(float)
+    #     desempeno_placeholder.loc["Sin produccion"] = 0
+    #     return desempeno_placeholder
+
     desempeno_examenes_por_paciente = (
         df.groupby(["ano", "glosa_examen", "id_paciente"])["glosa_examen"]
         .count()
@@ -601,6 +611,13 @@ def calcular_examenes_por_pacientes_por_glosa(df):
 
 def calcular_examenes_por_pacientes_por_cantidad(df):
     """Calcula los examenes por paciente para las prestaciones de una unidad"""
+    # if df.empty:
+    #     # Si el input es vacio, entonces retorna un placeholder
+    #     columns = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+    #     desempeno_placeholder = pd.DataFrame(columns=columns).astype(float)
+    #     desempeno_placeholder.loc["Sin produccion"] = 0
+    #     return desempeno_placeholder
+
     desempeno_examenes_por_paciente = (
         df.groupby(["ano", "glosa_examen", "id_paciente"])["cantidad"]
         .sum()
