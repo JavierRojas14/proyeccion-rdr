@@ -92,6 +92,9 @@ def leer_anatomia(ruta):
         ruta, dtypes={"id_paciente": str, "categoriadiagnostica": str, "codigo": str}
     ).to_pandas()
 
+    # Renombra columnas
+    df = df.rename(columns={"codigo": "glosa_examen", "codigocantidad": "cantidad"})
+
     # Separa en pacientes hosp, ambulatorio y urgencia
     df_hosp = df.query("condicion == 'HOSPITALIZADO'")
     df_amb = df.query("condicion == 'AMBULATORIO'")
