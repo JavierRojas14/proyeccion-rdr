@@ -106,6 +106,18 @@ def leer_anatomia(ruta):
     return df, df_hosp, df_amb, df_urg
 
 
+def leer_umt(ruta):
+    # Lee la base de datos de anatomia patologica
+    df = pl.read_csv(ruta, dtypes={"id_paciente": str}).to_pandas()
+
+    # Separa en pacientes hosp, ambulatorio y urgencia
+    df_hosp = df.query("tipo_examen == 'AC'")
+    df_amb = df.query("tipo_examen == 'AA'")
+    df_urg = df.query("tipo_examen == 'URG'")
+
+    return df, df_hosp, df_amb, df_urg
+
+
 def unir_atenciones_con_examenes(atenciones, examenes):
     """
     Une los datos de exámenes con los datos de días de estancia por paciente. Deja las atenciones
