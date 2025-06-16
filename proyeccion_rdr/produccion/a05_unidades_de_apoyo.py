@@ -463,6 +463,7 @@ def obtener_metricas_para_proyectar_unidad(
     porcentajes_examenes = calcular_porcentaje_examenes(
         df_unidad, df_unidad_hosp, df_unidad_amb, df_unidad_urg, df_grd, df_consultas, df_urgencias
     )
+    porcentajes_examenes = porcentajes_examenes.query("ano != 0")
 
     # 2. Obtiene cuantos examenes se realiza cada paciente por examen de la unidad
     if estimar_examenes_por_paciente_utilizando_glosa:
