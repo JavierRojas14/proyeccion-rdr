@@ -213,7 +213,7 @@ def filtrar_dataframes(dataframes, consulta):
     return {key: df.query(consulta).copy() for key, df in dataframes.items()}
 
 
-def cargar_datos(ruta_ine, ruta_fonasa):
+def cargar_datos(ruta_ine, ruta_fonasa, ruta_ine_nuevo):
     """
     Carga los datos desde archivos CSV para INE y FONASA.
 
@@ -227,7 +227,8 @@ def cargar_datos(ruta_ine, ruta_fonasa):
     print("> Cargando datos INE y FONASA")
     df_ine = pd.read_csv(ruta_ine)
     df_fonasa = pd.read_csv(ruta_fonasa, dtype={"ANO_INFORMACION": str})
-    return df_ine, df_fonasa
+    df_ine_nuevo = pd.read_csv(ruta_ine_nuevo)
+    return df_ine, df_fonasa, ruta_ine_nuevo
 
 
 def preparar_estratos_ine(df_ine, todos_los_servicios_rm):
@@ -351,6 +352,7 @@ def resetear_indices_dataframes(
 def procesar_poblaciones(
     ruta_ine,
     ruta_fonasa,
+    ruta_ine_nuevo,
     todos_los_servicios_rm,
     query_strings_ine,
     query_strings_fonasa,
@@ -371,7 +373,7 @@ def procesar_poblaciones(
         tuple: DataFrames de poblaciones extrapoladas y porcentajes FONASA.
     """
     # Cargar datos
-    df_ine, df_fonasa = cargar_datos(ruta_ine, ruta_fonasa)
+    df_ine, df_fonasa, df_ine_nuevo = cargar_datos(ruta_ine, ruta_fonasa, ruta_ine_nuevo)
 
     # Preparar estratos
     estratos_ine = preparar_estratos_ine(df_ine, todos_los_servicios_rm)
@@ -433,6 +435,7 @@ if __name__ == "__main__":
     # Definir rutas y parámetros
     RUTA_INE = "data/processed/df_ine.csv"
     RUTA_FONASA = "data/processed/df_fonasa.csv"
+    RUTA_INE_NUEVO = "data/processed/df_ine_nuevo.csv"
     QUERY_STRINGS_INE = {
         "todos": "",  # Todo el pais
         "hombres": "hombre_mujer == 1",  # Hombres
@@ -475,6 +478,7 @@ if __name__ == "__main__":
     ) = procesar_poblaciones(
         RUTA_INE,
         RUTA_FONASA,
+        RUTA_INE_NUEVO,
         TODOS_LOS_SERVICIOS_RM,
         QUERY_STRINGS_INE,
         QUERY_STRINGS_FONASA,
