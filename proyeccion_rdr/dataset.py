@@ -55,6 +55,25 @@ COLUMNAS_A_OCUPAR_FONASA = [
     "CUENTA_BENEFICIARIOS",
 ]
 
+CAMBIO_REGIONES_INE_NUEVO = {
+    "Metropolitana de Santiago": "Metropolitana de Santiago",
+    "de Valparaíso": "Valparaíso",
+    "del Biobío": "Biobío",
+    "del Libertador B. O'Higgins": "Libertador General Bernardo O'Higgins",
+    "de La Araucanía": "La Araucanía",
+    "de Los Lagos": "Los Lagos",
+    "del Maule": "Maule",
+    "de Ñuble": "Ñuble",
+    "de Coquimbo": "Coquimbo",
+    "de Los Rios": "Los Ríos",
+    "de Magallanes y de la Antártica Chilena": "Magallanes y de la Antártica Chilena",
+    "de Aisén del Gral. C. Ibáñez del Campo": "Aysén del General Carlos Ibáñez del Campo",
+    "de Antofagasta": "Antofagasta",
+    "de Atacama": "Atacama",
+    "de Tarapacá": "Tarapacá",
+    "de Arica y Parinacota": "Arica y Parinacota",
+}
+
 
 def procesar_ine(ruta_base_de_datos):
     print("> Procesando Base de datos INE")
@@ -150,6 +169,86 @@ def procesar_FONASA_innominadas(ruta_base_de_datos):
     return cuenta_fonasa
 
 
+def procesar_ine_nuevo(ruta):
+    print("> Procesando Base de datos INE nuevo (CENSO 2024)")
+    # Lee el archivo
+    ruta_archivo = (
+        f"{ruta}/1_poblacion_ine/censo_2024/DATOS COMUNA PARA POBLACION POR EDAD 25.06.2025.xlsx"
+    )
+    df = pd.read_excel(ruta_archivo)
+
+    # Lee el diccionario de regiones
+    diccionario_regiones = (
+        pd.read_excel("data/external/Esquema_Registro-2023.xlsx", sheet_name="Anexo 2", header=6)
+        .iloc[:, 5:9]
+        .dropna(subset="Código Comuna")
+    )
+
+    diccionario_regiones["Código Comuna"] = (
+        diccionario_regiones["Código Comuna"].astype(int).astype(str)
+    )
+
+    # Une el codigo de la comuna
+    df["CÓDIGO COMUNA"] = df["CÓDIGO COMUNA"].astype(str)
+    df = df.merge(
+        diccionario_regiones, how="left", left_on="CÓDIGO COMUNA", right_on="Código Comuna"
+    )
+
+    # Elimina el registro del pais
+    df = df.query("`NOMBRE COMUNA` != 'PAÍS'")
+
+    # Obtiene los nombres de las columnas
+    columnas_hombres = df.columns[df.columns.str.contains("HOMBRES")]
+    columnas_mujeres = df.columns[df.columns.str.contains("MUJERES")]
+    columnas_valores = list(columnas_hombres) + list(columnas_mujeres)
+
+    # Cambia a formato largo
+    formato_largo_poblacion = pd.melt(
+        df,
+        id_vars=["Código Región", "Nombre Región", "Código Comuna", "Nombre Comuna", "Edad"],
+        value_vars=columnas_valores,
+    ).rename(columns={"variable": "hombre_mujer"})
+
+    # Agrega el valor de hombre y mujer
+    formato_largo_poblacion[["hombre_mujer", "ano"]] = formato_largo_poblacion[
+        "hombre_mujer"
+    ].str.split(" ", expand=True)
+
+    # Cambia a formato antiguo
+    formato_largo_poblacion["hombre_mujer"] = formato_largo_poblacion["hombre_mujer"].replace(
+        {"HOMBRES": "1", "MUJERES": "2"}
+    )
+
+    # Convierte los datos a formato ancho
+    formato_ancho_poblacion = pd.pivot_table(
+        formato_largo_poblacion,
+        index=[
+            "Código Región",
+            "Nombre Región",
+            "Código Comuna",
+            "Nombre Comuna",
+            "Edad",
+            "hombre_mujer",
+        ],
+        columns="ano",
+        values="value",
+        aggfunc="sum",
+    ).reset_index()
+
+    # Cambia el nombre de las columnas
+    formato_ancho_poblacion = formato_ancho_poblacion.rename(
+        columns={"Código Región": "Region", "Nombre Región": "M", "Código Comuna": "Comuna"}
+    ).reset_index(drop=True)
+
+    # Cambia las glosas de las regiones
+    formato_ancho_poblacion["M"] = formato_ancho_poblacion["M"].replace(CAMBIO_REGIONES_INE_NUEVO)
+
+    # Cambia las glosas de las comunas
+    formato_ancho_poblacion["Nombre Comuna"] = formato_ancho_poblacion["Nombre Comuna"].str.title()
+
+    return formato_ancho_poblacion
+
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
@@ -171,14 +270,17 @@ def main(
     # Procesa INE y FONASA
     ine_procesada = procesar_ine(input_path)
     fonasa_procesada = procesar_fonasa(input_path)
+    ine_nuevo = procesar_ine_nuevo(input_path)
 
     # Define nombres de archivos output de INE y FONASA
     ruta_output_ine = f"{output_path}/df_ine.csv"
     ruta_output_fonasa = f"{output_path}/df_fonasa.csv"
+    ruta_output_ine_nuevo = f"{output_path}/df_ine_nuevo.csv"
 
     # Guarda base INE y FONASA
     ine_procesada.to_csv(ruta_output_ine)
     fonasa_procesada.to_csv(ruta_output_fonasa)
+    ine_nuevo.to_csv(ruta_output_ine_nuevo, index=False)
     logger.success("Processing dataset complete.")
     # -----------------------------------------
 
