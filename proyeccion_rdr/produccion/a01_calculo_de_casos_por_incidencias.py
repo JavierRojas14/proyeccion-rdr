@@ -23,9 +23,9 @@ COLUMNAS_INCIDENCIA = [
     "Porcentaje Pacientes CMA",
 ]
 
-ANIO_INICIO = 2017
-ANIO_TERMINO = 2035
-COLUMNAS_POBLACION_INE = [f"{i}" for i in range(ANIO_INICIO, ANIO_TERMINO + 1)]
+# ANIO_INICIO = 2024
+# ANIO_TERMINO = 2039
+COLUMNAS_POBLACION_INE = [f"{i}" for i in [2024, 2029, 2039]]
 
 
 def leer_planilla_poblaciones(ruta_planilla):
@@ -267,7 +267,7 @@ def calcular_casos_macroproceso(
     )
 
     # Elimina todas las filas donde hayan 0 casos o casos NaN
-    casos_por_region = casos_por_region.dropna(subset="2017").query("`2017` > 0")
+    casos_por_region = casos_por_region.dropna(subset="2024").query("`2024` > 0")
 
     # Calcula los casos de un macroproceso consolidados
     casos_consolidados[columnas_poblacion] = casos_consolidados[columnas_poblacion].mul(
@@ -275,7 +275,7 @@ def calcular_casos_macroproceso(
     )
 
     # Elimina todas las filas donde hayan 0 casos o casos NaN
-    casos_consolidados = casos_consolidados.dropna(subset="2017").query("`2017` > 0")
+    casos_consolidados = casos_consolidados.dropna(subset="2024").query("`2024` > 0")
 
     return casos_por_region, casos_consolidados
 
@@ -504,9 +504,14 @@ def obtener_casos_por_macroprocesos(
 
 def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
     # Lee la planilla de poblaciones INE y FONASA, junto a las poblaciones atingentes
-    poblaciones_ine, _, _, poblaciones_fonasa_extrapoladas = leer_planilla_poblaciones(
-        ruta_poblaciones
-    )
+    (
+        poblaciones_ine,
+        poblacion_fonasa,
+        poblaciones_ine_censo_nuevo,
+        porcentaje_fonasa,
+        poblaciones_fonasa_extrapoladas,
+        poblaciones_fonasa_extrapoladas_censo_nuevo,
+    ) = leer_planilla_poblaciones(ruta_poblaciones)
 
     # Lee la planilla de trazadoras del hospital
     incidencias, limitados_por_oferta = leer_planilla_incidencias(
@@ -515,7 +520,7 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
 
     # Obtiene los casos para cada problema de salud INE y FONASA
     casos_INE, poblacion_area_de_estudio, casos_FONASA = calcular_casos_incidencia(
-        incidencias, poblaciones_ine, poblaciones_fonasa_extrapoladas
+        incidencias, poblaciones_ine_censo_nuevo, poblaciones_fonasa_extrapoladas_censo_nuevo
     )
 
     # Acota los casos calculados solamente a los casos que requiere el hospital
@@ -618,19 +623,19 @@ def generar_resumen_total_hospital(
     # Obtiene el resumen total de casos teoricos
     resumen_total_casos_teoricos = pd.DataFrame(
         {
-            "poblacion_ine_2035_area_de_estudio": resumen_area_de_estudio["2035"],
-            "casos_teoricos_ine_2035_area_de_estudio": resumen_casos_ine["2035"],
-            "casos_teoricos_fonasa_2035_area_de_estudio": resumen_casos_fonasa["2035"],
-            "casos_teoricos_fonasa_2035_area_de_influencia": resumen_area_de_influencia["2035"],
-            "casos_teoricos_fonasa_2035_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2035"],
+            "poblacion_ine_2039_area_de_estudio": resumen_area_de_estudio["2039"],
+            "casos_teoricos_ine_2039_area_de_estudio": resumen_casos_ine["2039"],
+            "casos_teoricos_fonasa_2039_area_de_estudio": resumen_casos_fonasa["2039"],
+            "casos_teoricos_fonasa_2039_area_de_influencia": resumen_area_de_influencia["2039"],
+            "casos_teoricos_fonasa_2039_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2039"],
         },
         index=resumen_casos_a_hacerse_cargo.index,
     ).reset_index()
 
     # Obtiene el porcentaje de FONASA
     resumen_total_casos_teoricos["porcentaje_fonasa_pais"] = (
-        resumen_total_casos_teoricos["casos_teoricos_fonasa_2035_area_de_estudio"]
-        / resumen_total_casos_teoricos["casos_teoricos_ine_2035_area_de_estudio"]
+        resumen_total_casos_teoricos["casos_teoricos_fonasa_2039_area_de_estudio"]
+        / resumen_total_casos_teoricos["casos_teoricos_ine_2039_area_de_estudio"]
     )
 
     # Reordena las columnas del resumen
@@ -641,15 +646,15 @@ def generar_resumen_total_hospital(
         "Estadística",
         "Casos (Cada 100.000)",
         "Edad Incidencia",
-        "poblacion_ine_2035_area_de_estudio",
-        "casos_teoricos_ine_2035_area_de_estudio",
+        "poblacion_ine_2039_area_de_estudio",
+        "casos_teoricos_ine_2039_area_de_estudio",
         "porcentaje_fonasa_pais",
-        "casos_teoricos_fonasa_2035_area_de_estudio",
+        "casos_teoricos_fonasa_2039_area_de_estudio",
         "Área de Influencia Formal",
         "Área de Influencia Propuesta",
-        "casos_teoricos_fonasa_2035_area_de_influencia",
+        "casos_teoricos_fonasa_2039_area_de_influencia",
         "Casos a hacerse cargo del Área de Influencia Propuesta",
-        "casos_teoricos_fonasa_2035_a_hacerse_cargo",
+        "casos_teoricos_fonasa_2039_a_hacerse_cargo",
     ]
 
     resumen_total_casos_teoricos = resumen_total_casos_teoricos[orden_resumen_columnas]
