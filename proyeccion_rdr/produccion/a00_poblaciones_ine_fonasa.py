@@ -337,6 +337,7 @@ def extrapolar_poblacion_fonasa(poblaciones_ine, porcentaje_fonasa, columna_porc
 def resetear_indices_dataframes(
     poblaciones_ine,
     poblaciones_fonasa,
+    poblaciones_ine_nuevo,
     poblaciones_fonasa_extrapoladas,
     poblaciones_fonasa_extrapoladas_ine_nuevo,
     nombre_nuevas_cols,
@@ -344,18 +345,20 @@ def resetear_indices_dataframes(
     # Crea copia de las poblaciones para modificarlas
     df_ine = poblaciones_ine.copy()
     df_fonasa = poblaciones_fonasa.copy()
+    df_ine_nuevo = poblaciones_ine_nuevo.copy()
     df_fonasa_extrapol = poblaciones_fonasa_extrapoladas.copy()
     df_fonasa_extrapol_ine_nuevo = poblaciones_fonasa_extrapoladas_ine_nuevo.copy()
 
     # Resetea los indices de los 3 dataframes
     df_ine = df_ine.reset_index(names=nombre_nuevas_cols)
     df_fonasa = df_fonasa.reset_index(names=nombre_nuevas_cols)
+    df_ine_nuevo = df_ine_nuevo.reset_index(names=nombre_nuevas_cols)
     df_fonasa_extrapol = df_fonasa_extrapol.reset_index(names=nombre_nuevas_cols)
     df_fonasa_extrapol_ine_nuevo = df_fonasa_extrapol_ine_nuevo.reset_index(
         names=nombre_nuevas_cols
     )
 
-    return df_ine, df_fonasa, df_fonasa_extrapol, df_fonasa_extrapol_ine_nuevo
+    return df_ine, df_fonasa, df_ine_nuevo, df_fonasa_extrapol, df_fonasa_extrapol_ine_nuevo
 
 
 def procesar_poblaciones(
@@ -438,11 +441,13 @@ def procesar_poblaciones(
     (
         poblaciones_ine,
         poblaciones_fonasa,
+        poblaciones_ine_nuevo,
         poblaciones_fonasa_extrapoladas,
         poblaciones_fonasa_extrapoladas_ine_nuevo,
     ) = resetear_indices_dataframes(
         poblaciones_ine,
         poblaciones_fonasa,
+        poblaciones_ine_nuevo,
         poblaciones_fonasa_extrapoladas,
         poblaciones_fonasa_extrapoladas_ine_nuevo,
         COLS_NUEVAS,
@@ -453,6 +458,7 @@ def procesar_poblaciones(
         df_fonasa,
         poblaciones_ine,
         poblaciones_fonasa,
+        poblaciones_ine_nuevo,
         porcentajes_fonasa,
         poblaciones_fonasa_extrapoladas,
         poblaciones_fonasa_extrapoladas_ine_nuevo,
@@ -501,6 +507,7 @@ if __name__ == "__main__":
         df_fonasa,
         poblacion_ine,
         poblacion_fonasa,
+        poblaciones_ine_nuevo,
         porcentaje_fonasa,
         poblaciones_fonasa_extrapoladas,
         poblaciones_fonasa_extrapoladas_ine_nuevo,
@@ -521,6 +528,7 @@ if __name__ == "__main__":
     with pd.ExcelWriter("data/interim/0.0_poblaciones_ine_y_fonasa_a_utilizar.xlsx") as file:
         poblacion_ine.to_excel(file, sheet_name="poblacion_INE", index=False)
         poblacion_fonasa.to_excel(file, sheet_name="poblacion_FONASA", index=False)
+        poblaciones_ine_nuevo.to_excel(file, sheet_name="poblacion_INE_censo_2024", index=False)
         porcentaje_fonasa.reset_index().to_excel(
             file, sheet_name="porcentaje_FONASA_por_estrato", index=False
         )
