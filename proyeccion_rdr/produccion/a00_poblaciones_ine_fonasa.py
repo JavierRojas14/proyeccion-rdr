@@ -89,6 +89,7 @@ ANIO_TERMINO = 2035
 
 COLUMNAS_POBLACION_INE = [f"{i}" for i in range(ANIO_INICIO, ANIO_TERMINO + 1)]
 COLUMNAS_POBLACION_FONASA = ["2018", "2019", "2020", "2021", "2022", "2023"]
+COLUMNAS_POBLACION_INE_NUEVO = [f"{i}" for i in [2024, 2029, 2039]]
 
 
 def procesar_resultados_por_estrato_y_grupos_etarios(
@@ -357,6 +358,7 @@ def procesar_poblaciones(
     query_strings_ine,
     query_strings_fonasa,
     columnas_poblacion_ine,
+    columnas_poblacion_ine_nuevo,
 ):
     """
     Procesa los datos de INE y FONASA para obtener las poblaciones extrapoladas.
@@ -387,6 +389,10 @@ def procesar_poblaciones(
 
     poblaciones_fonasa = procesar_resultados_por_estrato_y_grupos_etarios(
         estratos_fonasa, query_strings_fonasa, "CUENTA_BENEFICIARIOS", "FONASA"
+    )
+
+    poblaciones_ine_nuevo = procesar_resultados_por_estrato_y_grupos_etarios(
+        estratos_ine_nuevo, query_strings_ine, columnas_poblacion_ine_nuevo, "INE"
     )
 
     # Calcular porcentaje FONASA y cambia el porcentaje de los recien nacidos vivos
@@ -484,6 +490,7 @@ if __name__ == "__main__":
         QUERY_STRINGS_INE,
         QUERY_STRINGS_FONASA,
         COLUMNAS_POBLACION_INE,
+        COLUMNAS_POBLACION_INE_NUEVO,
     )
 
     # Guardar o analizar resultados
