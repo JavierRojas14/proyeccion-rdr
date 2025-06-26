@@ -314,7 +314,7 @@ def calcular_casos_a_hacerse_cargo(df, porcentaje_col, columnas_suma):
 
 def hacer_control_de_casos(df_casos_long):
     print("Controlando las trazadoras ingresadas...")
-    trazadoras_sin_casos = df_casos_long[df_casos_long["2035"].isna()]
+    trazadoras_sin_casos = df_casos_long[df_casos_long["2039"].isna()]
     trazadoras_sin_casos = trazadoras_sin_casos.reset_index().sort_values(["Diagnostico"])
     if not trazadoras_sin_casos.empty:
         print("Hay un error con las trazadoras ingresadas:")
@@ -356,7 +356,7 @@ def procesar_incidencias(
     # Corrige (elimina) los casos duplicados de una especialidad
     agrupacion_para_sacar_duplicados = ["ESTAMENTO/ESPECIALIDAD", "Diagnostico", "Estrato"]
     casos_por_especialidad_long_sin_duplicados = corregir_casos_duplicados_por_especialidad(
-        casos_por_especialidad_long, agrupacion_para_sacar_duplicados, anios_poblacion, "2035"
+        casos_por_especialidad_long, agrupacion_para_sacar_duplicados, anios_poblacion, "2039"
     )
 
     # Obtiene los casos totales de macroproceso previo a obtener los hacerse cargo
