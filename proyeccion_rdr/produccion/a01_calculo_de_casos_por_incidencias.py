@@ -591,7 +591,7 @@ def calcular_casos_de_trazadoras(ruta_poblaciones, ruta_incidencias):
         "casos_fonasa_consolidados": casos_fonasa_consolidados.reset_index(),
         "casos_macroproceso_por_region": casos_macroprocesos_por_region.reset_index(),
         "casos_macroproceso_consolidado": casos_macroprocesos_consolidados.reset_index(),
-        "casos_a_hacerse_cargo_INT": casos_a_hacerse_cargo_consolidados,
+        "casos_a_hacerse_cargo_RDR": casos_a_hacerse_cargo_consolidados,
     }
 
 
@@ -678,7 +678,7 @@ if __name__ == "__main__":
         casos_ine=resultados_poblacionales["casos_teoricos_INE"],
         casos_fonasa=resultados_poblacionales["casos_teoricos_FONASA"],
         casos_fonasa_consolidados=resultados_poblacionales["casos_fonasa_consolidados"],
-        casos_a_hacerse_cargo_consolidados=resultados_poblacionales["casos_a_hacerse_cargo_INT"],
+        casos_a_hacerse_cargo_consolidados=resultados_poblacionales["casos_a_hacerse_cargo_RDR"],
         columnas_poblacion=COLUMNAS_INCIDENCIA,
     )
 
