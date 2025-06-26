@@ -228,7 +228,7 @@ def cargar_datos(ruta_ine, ruta_fonasa, ruta_ine_nuevo):
     df_ine = pd.read_csv(ruta_ine)
     df_fonasa = pd.read_csv(ruta_fonasa, dtype={"ANO_INFORMACION": str})
     df_ine_nuevo = pd.read_csv(ruta_ine_nuevo)
-    return df_ine, df_fonasa, ruta_ine_nuevo
+    return df_ine, df_fonasa, df_ine_nuevo
 
 
 def preparar_estratos_ine(df_ine, todos_los_servicios_rm):
@@ -378,6 +378,7 @@ def procesar_poblaciones(
     # Preparar estratos
     estratos_ine = preparar_estratos_ine(df_ine, todos_los_servicios_rm)
     estratos_fonasa = preparar_estratos_fonasa(df_fonasa, todos_los_servicios_rm)
+    estratos_ine_nuevo = preparar_estratos_ine(df_ine_nuevo, todos_los_servicios_rm)
 
     # Procesar resultados por estratos y grupos etarios
     poblaciones_ine = procesar_resultados_por_estrato_y_grupos_etarios(
