@@ -24,8 +24,8 @@ COLUMNAS_INCIDENCIA = [
 ]
 
 # ANIO_INICIO = 2024
-# ANIO_TERMINO = 2039
-COLUMNAS_POBLACION_INE = [f"{i}" for i in [2024, 2029, 2039]]
+# ANIO_TERMINO = 2040
+COLUMNAS_POBLACION_INE = [f"{i}" for i in [2025, 2030, 2040]]
 
 
 def leer_planilla_poblaciones(ruta_planilla):
@@ -267,7 +267,7 @@ def calcular_casos_macroproceso(
     )
 
     # Elimina todas las filas donde hayan 0 casos o casos NaN
-    casos_por_region = casos_por_region.dropna(subset="2024").query("`2024` > 0")
+    casos_por_region = casos_por_region.dropna(subset="2025").query("`2025` > 0")
 
     # Calcula los casos de un macroproceso consolidados
     casos_consolidados[columnas_poblacion] = casos_consolidados[columnas_poblacion].mul(
@@ -275,7 +275,7 @@ def calcular_casos_macroproceso(
     )
 
     # Elimina todas las filas donde hayan 0 casos o casos NaN
-    casos_consolidados = casos_consolidados.dropna(subset="2024").query("`2024` > 0")
+    casos_consolidados = casos_consolidados.dropna(subset="2025").query("`2025` > 0")
 
     return casos_por_region, casos_consolidados
 
@@ -623,19 +623,19 @@ def generar_resumen_total_hospital(
     # Obtiene el resumen total de casos teoricos
     resumen_total_casos_teoricos = pd.DataFrame(
         {
-            "poblacion_ine_2039_area_de_estudio": resumen_area_de_estudio["2039"],
-            "casos_teoricos_ine_2039_area_de_estudio": resumen_casos_ine["2039"],
-            "casos_teoricos_fonasa_2039_area_de_estudio": resumen_casos_fonasa["2039"],
-            "casos_teoricos_fonasa_2039_area_de_influencia": resumen_area_de_influencia["2039"],
-            "casos_teoricos_fonasa_2039_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2039"],
+            "poblacion_ine_2040_area_de_estudio": resumen_area_de_estudio["2040"],
+            "casos_teoricos_ine_2040_area_de_estudio": resumen_casos_ine["2040"],
+            "casos_teoricos_fonasa_2040_area_de_estudio": resumen_casos_fonasa["2040"],
+            "casos_teoricos_fonasa_2040_area_de_influencia": resumen_area_de_influencia["2040"],
+            "casos_teoricos_fonasa_2040_a_hacerse_cargo": resumen_casos_a_hacerse_cargo["2040"],
         },
         index=resumen_casos_a_hacerse_cargo.index,
     ).reset_index()
 
     # Obtiene el porcentaje de FONASA
     resumen_total_casos_teoricos["porcentaje_fonasa_pais"] = (
-        resumen_total_casos_teoricos["casos_teoricos_fonasa_2039_area_de_estudio"]
-        / resumen_total_casos_teoricos["casos_teoricos_ine_2039_area_de_estudio"]
+        resumen_total_casos_teoricos["casos_teoricos_fonasa_2040_area_de_estudio"]
+        / resumen_total_casos_teoricos["casos_teoricos_ine_2040_area_de_estudio"]
     )
 
     # Reordena las columnas del resumen
@@ -646,15 +646,15 @@ def generar_resumen_total_hospital(
         "Estadística",
         "Casos (Cada 100.000)",
         "Edad Incidencia",
-        "poblacion_ine_2039_area_de_estudio",
-        "casos_teoricos_ine_2039_area_de_estudio",
+        "poblacion_ine_2040_area_de_estudio",
+        "casos_teoricos_ine_2040_area_de_estudio",
         "porcentaje_fonasa_pais",
-        "casos_teoricos_fonasa_2039_area_de_estudio",
+        "casos_teoricos_fonasa_2040_area_de_estudio",
         "Área de Influencia Formal",
         "Área de Influencia Propuesta",
-        "casos_teoricos_fonasa_2039_area_de_influencia",
+        "casos_teoricos_fonasa_2040_area_de_influencia",
         "Casos a hacerse cargo del Área de Influencia Propuesta",
-        "casos_teoricos_fonasa_2039_a_hacerse_cargo",
+        "casos_teoricos_fonasa_2040_a_hacerse_cargo",
     ]
 
     resumen_total_casos_teoricos = resumen_total_casos_teoricos[orden_resumen_columnas]

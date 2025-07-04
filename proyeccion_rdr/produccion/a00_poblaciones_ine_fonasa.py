@@ -89,7 +89,7 @@ ANIO_TERMINO = 2035
 
 COLUMNAS_POBLACION_INE = [f"{i}" for i in range(ANIO_INICIO, ANIO_TERMINO + 1)]
 COLUMNAS_POBLACION_FONASA = ["2018", "2019", "2020", "2021", "2022", "2023"]
-COLUMNAS_POBLACION_INE_NUEVO = [f"{i}" for i in [2024, 2029, 2039]]
+COLUMNAS_POBLACION_INE_NUEVO = [f"{i}" for i in [2025, 2030, 2040]]
 
 
 def procesar_resultados_por_estrato_y_grupos_etarios(
